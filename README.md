@@ -1,2 +1,3 @@
-# infrastructure
-Shared kernel for infrastructure layers
+# Infrastructure
+
+Shared kernel for infrastructure layers.
