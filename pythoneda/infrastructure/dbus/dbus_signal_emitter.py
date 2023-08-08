@@ -1,9 +1,9 @@
 """
-pythonedainfrastructure/pythonedadbus/dbus_signal_emitter.py
+pythoneda/infrastructure/dbus/dbus_signal_emitter.py
 
 This file defines the DbusSignalEmitter class.
 
-Copyright (C) 2023-today rydnr's pythoneda-infrastructure/base
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,15 +18,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.event import Event
-from pythoneda.event_emitter import EventEmitter
-
 import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-
 import logging
+from pythoneda import Event, EventEmitter
 from typing import Dict
 
 class DbusSignalEmitter(EventEmitter, abc.ABC):
@@ -49,14 +46,10 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         """
         super().__init__()
 
-    def emitters(self) -> Dict:
+    def signal_emitters(self) -> Dict:
         """
         Retrieves the configured event emitters.
-        :return: A dictionary with the event class name as key, and a dictionary as value. Such dictionary must include the following entries:
-          - "interface": the event interface,
-          - "busType": the bus type,
-          - "transformer": a function capable of transforming the event information into a list of parameters.
-          - "signature": a function capable of returning the types of the event parameters.
+        :return: For each event, a list with the event interface and the bus type.
         :rtype: Dict
         """
         return {}
@@ -79,14 +72,12 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         """
         logging.getLogger(self.__class__.__name__).info(f'In dbus_signal_emitter')
         await super().emit(event)
-        collaborators = self.emitters()
+        collaborators = self.signal_emitters()
 
         if collaborators:
-            emitter = collaborators.get(self.fqdn_key(event.__class__), None)
-            if emitter:
-                interface_class = emitter["interface"]
+            if self.fqdn_key(event.__class__) in collaborators:
+                interface_class, bus_type = collaborators[self.fqdn_key(event.__class__)]
                 instance = interface_class()
-                bus_type = emitter["busType"]
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(interface_class.path(), instance)
                 logging.getLogger(self.__class__.__name__).info(f'Sending signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
@@ -95,8 +86,8 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                         interface_class.path(),
                         self.fqdn_key(interface_class),
                         instance.name,
-                        emitter["signature"](event),
-                        emitter["transformer"](event)))
+                        instance.sign(event),
+                        instance.transform(event)))
                 logging.getLogger(self.__class__.__name__).info(f'Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
             else:
                 logging.getLogger(self.__class__.__name__).warn(f'No d-bus emitter registered for event {event.__class__}')

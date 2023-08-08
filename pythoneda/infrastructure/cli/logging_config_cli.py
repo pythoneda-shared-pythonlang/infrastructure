@@ -1,9 +1,9 @@
 """
-pythonedainfrastructure/pythonedacli/logging_config_cli.py
+pythoneda/infrastructure/cli/logging_config_cli.py
 
 This file parses the logging config from the command-line interface for PythonEDA-Application base.
 
-Copyright (C) 2023-today rydnr's pythoneda-infrastructure/base
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,9 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.primary_port import PrimaryPort
-
 import argparse
+from pythoneda import PrimaryPort
 
 class LoggingConfigCli(PrimaryPort):
 

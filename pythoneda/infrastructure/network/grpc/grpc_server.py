@@ -1,9 +1,9 @@
 """
-pythonedainfrastructure/pythonedanetwork/pythonedagrpc/pythoneda_grpc_server.py
+pythoneda/infrastructure/network/grpc/grpc_server.py
 
 Base class for gRPC servers on PythonEDA applications.
 
-Copyright (C) 2023-today rydnr's pythoneda-infrastructure/base
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,38 +18,35 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from pythoneda.event import Event
-from pythoneda.primary_port import PrimaryPort
-
 import abc
+import asyncio
 from concurrent import futures
 import grpc
-
-import asyncio
-import time
 import json
 import logging
+from pythoneda import Event, PrimaryPort
+import time
 from typing import Dict
 
-class PythonedaGrpcServer(PrimaryPort, abc.ABC):
+class GrpcServer(PrimaryPort, abc.ABC):
     """
     Base class for gRPC servers on PythonEDA applications.
 
-    Class name: PythonedaGrpcServer
+    Class name: GrpcServer
 
     Responsibilities:
         - Launch a gRPC server on a given port.
         - Provide extension hooks for subclasses.
 
     Collaborators:
-        - pythonedaapplication.PythonEDAApplication: Sends notifications when the application is launched via CLI.
+        - pythoneda.application.PythonEDA: Sends notifications when the application is launched via CLI.
     """
 
     _default_insecure_port = '[::]:50051'
 
     def __init__(self, port=None):
         """
-        Initializes the instance.
+        Initializes a new GrpcServer instance.
         :param port: The gRPC port.
         :type port: int
         """
@@ -62,9 +59,9 @@ class PythonedaGrpcServer(PrimaryPort, abc.ABC):
     @property
     def app(self):
         """
-        Retrieves the PythonEDAApplication instance.
+        Retrieves the PythonEDA application instance.
         :return: Such instance.
-        :rtype: PythonEDAApplication
+        :rtype: pythoneda.application.PythonEDA
         """
         return self._app
 
@@ -91,16 +88,16 @@ class PythonedaGrpcServer(PrimaryPort, abc.ABC):
         Adds servicers to given server.
         :param server: The gRPC server.
         :type server: grpc.aio.Server
-        :param app: The PythonEDAApplication instance.
-        :type app: pythonedaapplication.PythonEDAApplication
+        :param app: The PythonEDA application.
+        :type app: pythoneda.application.PythonEDA
         """
         raise NotImplementedError("add_servicers() not implemented by {self.__class__}")
 
     async def accept(self, app):
         """
         A notification of the system being launched via CLI.
-        :param app: The PythonEDAApplication instance.
-        :type app: pythonedaapplication.PythonEDAApplication
+        :param app: The PythonEDA application.
+        :type app: pythoneda.application.PythonEDA
         """
         self._app = app
         serve_task = asyncio.create_task(self.serve(app))
@@ -117,8 +114,8 @@ class PythonedaGrpcServer(PrimaryPort, abc.ABC):
     async def serve(self, app):
         """
         Starts the gRPC server.
-        :param app: The PythonEDAApplication instance.
-        :type app: pythonedaapplication.PythonEDAApplication
+        :param app: The PythonEDA application.
+        :type app: pythoneda.application.PythonEDA
         """
         server = grpc.aio.server()
         self.add_servicers(server, app)
