@@ -1,7 +1,7 @@
 """
 pythoneda/infrastructure/logging/logging_config.py
 
-This file configures the logging for PythonEDA-Infrastructure layers.
+This file configures PythonEDA logging.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
