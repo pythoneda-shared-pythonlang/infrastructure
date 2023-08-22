@@ -52,6 +52,14 @@ def configure_logging(verbose: bool, trace: bool, quiet: bool):
         level = logging.DEBUG
     elif (verbose):
         level = logging.INFO
+    default_logger = logging.getLogger()
+    handlers_to_remove = []
+    for handler in default_logger.handlers:
+        if isinstance(handler, logging.StreamHandler):
+            handlers_to_remove.append(handler)
+    for handler in handlers_to_remove:
+        default_logger.removeHandler(handler)
+
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     formatter = logging.Formatter(
@@ -59,10 +67,8 @@ def configure_logging(verbose: bool, trace: bool, quiet: bool):
         datefmt='%Y-%m-%d %H:%M:%S'
     )
     console_handler.setFormatter(formatter)
-    default_logger = logging.getLogger()
     default_logger.setLevel(level)
     default_logger.addHandler(console_handler)
-
     default_level = default_logger.getEffectiveLevel()
 
     next_level = next_higher_level(default_level)
@@ -70,6 +76,6 @@ def configure_logging(verbose: bool, trace: bool, quiet: bool):
     pythoneda_logger = logging.getLogger("pythoneda")
     pythoneda_logger.setLevel(default_level)
 
-    for name in [ "urllib3.connectionpool" ]:
+    for name in [ "asyncio", "git", "urllib3.connectionpool" ]:
         logger = logging.getLogger(name)
         logger.setLevel(next_level)
