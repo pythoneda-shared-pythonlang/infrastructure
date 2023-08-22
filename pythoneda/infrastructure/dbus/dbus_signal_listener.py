@@ -22,7 +22,6 @@ import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-import logging
 from pythoneda import PrimaryPort
 from typing import Dict
 
@@ -112,12 +111,12 @@ class DbusSignalListener(PrimaryPort, abc.ABC):
                         body=[f"type='signal',interface='{fqdn_interface_class}',path='{interface_class.path()}',member='{interface.name}'"]
                     )
                 )
-                logging.getLogger(self.__class__.__module__).info(f'Subscribed to signal {interface.name} via {interface_class.path()}')
+                DbusSignalListener.logger().info(f'Subscribed to signal {interface.name} via {interface_class.path()}')
 
             while True:
                 await asyncio.sleep(1)
         else:
-            logging.getLogger(self.__class__.__name__).warning(f'No receivers configured for {app}!')
+            DbusSignalListener.logger().warning(f'No receivers configured for {app}!')
 
     def fqdn_key(self, cls: type) -> str:
         """
@@ -138,7 +137,7 @@ class DbusSignalListener(PrimaryPort, abc.ABC):
         :rtype: bool
         """
         if message.message_type == MessageType.SIGNAL:
-            print(f'Received signal {message.member}')
+            DbusSignalListener.logger().info(f'Received signal {message.member}')
             result = True
             event = self.parse(message, message.member)
             asyncio.create_task(self.listen(event))

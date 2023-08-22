@@ -22,7 +22,6 @@ import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-import logging
 from pythoneda import Event, EventEmitter
 from typing import Dict
 
@@ -70,7 +69,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         :param event: The domain event to emit.
         :type event: pythoneda.event.Event
         """
-        logging.getLogger(self.__class__.__name__).info(f'In dbus_signal_emitter')
+
         await super().emit(event)
         collaborators = self.signal_emitters()
 
@@ -80,7 +79,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 instance = interface_class()
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(interface_class.path(), instance)
-                logging.getLogger(self.__class__.__name__).info(f'Sending signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
+                DbusSignalEmitter.logger().info(f'Sending signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
                 await bus.send(
                     Message.new_signal(
                         interface_class.path(),
@@ -88,8 +87,8 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                         instance.name,
                         instance.sign(event),
                         instance.transform(event)))
-                logging.getLogger(self.__class__.__name__).info(f'Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
+                DbusSignalEmitter.logger().info(f'Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
             else:
-                logging.getLogger(self.__class__.__name__).warn(f'No d-bus emitter registered for event {event.__class__}')
+                DbusSignalEmitter.logger().warn(f'No d-bus emitter registered for event {event.__class__}')
         else:
-            logging.getLogger(self.__class__.__name__).warn(f'No d-bus emitters found')
+            DbusSignalEmitter.logger().warn(f'No d-bus emitters found')
