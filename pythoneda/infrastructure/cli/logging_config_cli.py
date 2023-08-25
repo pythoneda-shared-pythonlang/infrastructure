@@ -62,4 +62,7 @@ class LoggingConfigCli(PrimaryPort):
         parser.add_argument('-vv', '--trace', action='store_true', help="Enable tracing mode")
         parser.add_argument('-q', '--quiet', action='store_true', help="Enable quiet mode")
         args, unknown_args = parser.parse_known_args()
-        await app.accept_configure_logging({ "verbose": args.verbose, "trace": args.trace, "quiet": args.quiet })
+        info = True
+        if args.quiet:
+            info = False
+        await app.accept_configure_logging({ "verbose": args.verbose, "info": info, "trace": args.trace, "quiet": args.quiet })

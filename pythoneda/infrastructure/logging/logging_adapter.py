@@ -37,8 +37,6 @@ class LoggingAdapter(LoggingPort):
     def __init__(self):
         """
         Creates a new instance.
-        :param mappings: The adapter mappings.
-        :type mappings: Dict
         """
         super().__init__()
 

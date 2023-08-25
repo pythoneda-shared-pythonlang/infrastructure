@@ -35,22 +35,22 @@ def next_higher_level(level: int):
             return levels[i - 1] if i > 0 else current_level
     return level
 
-def configure_logging(verbose: bool, trace: bool, quiet: bool):
+def configure_logging(info:bool, debug:bool, quiet:bool):
     """
     Configures the logging system.
-    :param verbose: Whether to enable verbosity.
-    :type verbose: bool
-    :param trace: Whether to enable tracing messages.
-    :type trace: bool
+    :param info: Whether informational messages are allowed.
+    :type info: bool
+    :param debug: Whether to enable verbosity.
+    :type debug: bool
     :param quiet: Whether to turn on "quiet mode".
     :type quiet: bool
     """
     level = logging.WARNING
-    if (quiet):
+    if quiet:
         level = logging.ERROR
-    elif (trace):
+    elif debug:
         level = logging.DEBUG
-    elif (verbose):
+    elif info:
         level = logging.INFO
     default_logger = logging.getLogger()
     handlers_to_remove = []

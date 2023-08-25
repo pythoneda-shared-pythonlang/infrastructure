@@ -22,11 +22,10 @@ import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-from pythoneda import PrimaryPort
+from pythoneda import EventListenerPort
 from typing import Dict
 
-class DbusSignalListener(PrimaryPort, abc.ABC):
-
+class DbusSignalListener(EventListenerPort, abc.ABC):
     """
     A PrimaryPort that receives events as d-bus signals.
 
@@ -95,7 +94,7 @@ class DbusSignalListener(PrimaryPort, abc.ABC):
                 interface_class, bus_type = value
                 interface = interface_class()
 
-                fqdn_interface_class = self.fqdn_key(interface_class)
+                fqdn_interface_class = self.__class__.fqdn_key(interface_class)
                 bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
 
                 bus.add_message_handler(self.process_message)
@@ -117,16 +116,6 @@ class DbusSignalListener(PrimaryPort, abc.ABC):
                 await asyncio.sleep(1)
         else:
             DbusSignalListener.logger().warning(f'No receivers configured for {app}!')
-
-    def fqdn_key(self, cls: type) -> str:
-        """
-        Retrieves the key used for given class.
-        :param cls: The class.
-        :type cls: Class
-        :return: The key.
-        :rtype: str
-        """
-        return f'{cls.__module__}.{cls.__name__}'
 
     def process_message(self, message: Message) -> bool:
         """
