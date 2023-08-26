@@ -53,16 +53,6 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         """
         return {}
 
-    def fqdn_key(self, cls: type) -> str:
-        """
-        Retrieves the key used for given class.
-        :param cls: The class.
-        :type cls: Class
-        :return: The key.
-        :rtype: str
-        """
-        return f'{cls.__module__}.{cls.__name__}'
-
     async def emit(self, event: Event):
         """
         Emits given event as d-bus signal.
@@ -74,8 +64,9 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         collaborators = self.signal_emitters()
 
         if collaborators:
-            if self.fqdn_key(event.__class__) in collaborators:
-                interface_class, bus_type = collaborators[self.fqdn_key(event.__class__)]
+            event_class_name = self.__class__.full_class_name(event.__class__)
+            if event_class_name in collaborators:
+                interface_class, bus_type = collaborators[event_class_name]
                 instance = interface_class()
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(interface_class.path(), instance)
@@ -83,7 +74,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 await bus.send(
                     Message.new_signal(
                         interface_class.path(),
-                        self.fqdn_key(interface_class),
+                        self.__class__.full_class_name(interface_class),
                         instance.name,
                         instance.sign(event),
                         instance.transform(event)))

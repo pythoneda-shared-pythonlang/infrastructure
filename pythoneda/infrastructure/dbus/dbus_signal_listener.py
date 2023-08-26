@@ -23,7 +23,8 @@ import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
 from pythoneda import EventListenerPort
-from typing import Dict
+import re
+from typing import Dict, List
 
 class DbusSignalListener(EventListenerPort, abc.ABC):
     """
@@ -79,11 +80,40 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         """
         return {}
 
+    def parse_signal_name(self, value) -> List:
+        """
+        Parses a signal name into tokens.
+        :param value: The value.
+        :type value: str
+        :return: The tokens.
+        :rtype: List
+        """
+        result = []
+        tokens = value.split('_')
+        current_token = None
+        for token in tokens:
+            if token[0].isupper():
+                if current_token is not None:
+                    result.append("_".join(current_token))
+                result.append(token)
+                current_token = None
+            else:
+                if current_token is None:
+                    current_token = []
+                current_token.append(token)
+
+        if current_token is not None:
+            result.append("_".join(current_token))
+
+        result[:-1] = [x.lower() for x in result[:-1]]
+
+        return result
+
     async def accept(self, app):
         """
         Receives the notification to connect to d-bus.
         :param app: The PythonEDAApplication instance.
-        :type app: PythonEDA from pythonedaapplication.pythoneda
+        :type app: pythoneda.application.PythonEDA
         """
         await self.set_app(app)
 
@@ -94,7 +124,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
                 interface_class, bus_type = value
                 interface = interface_class()
 
-                fqdn_interface_class = self.__class__.fqdn_key(interface_class)
+                fqdn_interface_class = self.__class__.full_class_name(interface_class)
                 bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
 
                 bus.add_message_handler(self.process_message)
@@ -129,6 +159,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
             DbusSignalListener.logger().info(f'Received signal {message.member}')
             result = True
             event = self.parse(message, message.member)
+            print(f'event parsed -> {event}')
             asyncio.create_task(self.listen(event))
         else:
             result = False
@@ -146,15 +177,6 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
         return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
 
-    @abc.abstractmethod
-    def event_package(self):
-        """
-        Retrieves the event package.
-        :return: The package.
-        :rtype: str
-        """
-        raise NotImplementedError("event_package() should be implemented in subclasses")
-
     def parse(self, message: Message, signal:str):
         """
         Parses given signal.
@@ -164,20 +186,25 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :type signal: str
         """
         result = None
-        package = self.event_package()
-        # check the package matches "pythoneda.realm.rydnr.events"
-        if signal.split("_")[:-1] == package.split("."):
-            # delegate the parsing logic to the dbus event class
-            from importlib import import_module
-            module = import_module(f'{package}.infrastructure.dbus_{self._camel_to_snake(signal.split("_")[-1])}')
-            dbus_event_class = getattr(module, f'Dbus{signal.split("_"[-1])}')
+
+        tokens = self.parse_signal_name(signal)
+        package = ".".join(tokens[:-1])
+        # delegate the parsing logic to the dbus event class
+        from importlib import import_module
+        module_name = f'{package}.infrastructure.dbus.dbus_{self._camel_to_snake(tokens[-1])}'
+        try:
+            module = import_module(module_name)
+            dbus_event_class = getattr(module, f'Dbus{tokens[-1]}')
             result = dbus_event_class.parse(message)
+        except ImportError as err:
+            DbusSignalListener.logger().debug(f'Discarding unparseable event: {err}')
+
         return result
 
     async def listen(self, event):
         """
         Gets notified of a signal.
         :param event: The event.
-        :type event: pythoneda.event.Event
+        :type event: pythoneda.Event
         """
         await self.app.accept(event)
