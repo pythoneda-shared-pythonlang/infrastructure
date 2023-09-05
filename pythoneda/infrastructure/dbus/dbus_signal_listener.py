@@ -159,7 +159,6 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
             DbusSignalListener.logger().info(f'Received signal {message.member}')
             result = True
             event = self.parse(message, message.member)
-            print(f'event parsed -> {event}')
             asyncio.create_task(self.listen(event))
         else:
             result = False
