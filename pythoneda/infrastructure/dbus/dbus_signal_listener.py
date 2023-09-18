@@ -140,12 +140,12 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
                         body=[f"type='signal',interface='{fqdn_interface_class}',path='{interface_class.path()}',member='{interface.name}'"]
                     )
                 )
-                DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").info(f'Subscribed to signal {interface.name} via {interface_class.path()}')
+                DbusSignalListener.logger().info(f'Subscribed to signal {interface.name} via {interface_class.path()}')
 
             while True:
                 await asyncio.sleep(1)
         else:
-            DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").warning(f'No receivers configured for {app}!')
+            DbusSignalListener.logger().warning(f'No receivers configured for {app}!')
 
     def process_message(self, message: Message) -> bool:
         """
@@ -156,13 +156,13 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :rtype: bool
         """
         if message.message_type == MessageType.SIGNAL:
-            DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").info(f'Received signal {message.member}')
+            DbusSignalListener.logger().info(f'Received signal {message.member}')
             result = True
             event = self.parse(message, message.member)
             if event:
                 asyncio.create_task(self.listen(event))
             else:
-                DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").warning(f'Discarding unparseable message: {message}')
+                DbusSignalListener.logger().warning(f'Discarding unparseable message: {message}')
 
         else:
             result = False
@@ -200,9 +200,9 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
             dbus_event_class = getattr(module, f'Dbus{tokens[-1]}')
             result = dbus_event_class.parse(message)
         except ImportError as err:
-            DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").debug(f'Discarding unparseable event: {err}')
+            DbusSignalListener.logger().debug(f'Discarding unparseable event: {err}')
         except Error as err:
-            DbusSignalListener.logger("pythoneda.infrastructure.dbus.DbusSignalListener").error(err)
+            DbusSignalListener.logger().error(err)
 
         return result
 
