@@ -70,7 +70,6 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 instance = interface_class()
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(interface_class.path(), instance)
-                DbusSignalEmitter.logger().info(f'Sending signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
                 await bus.send(
                     Message.new_signal(
                         interface_class.path(),
