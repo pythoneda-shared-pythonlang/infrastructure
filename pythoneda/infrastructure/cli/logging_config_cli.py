@@ -49,6 +49,16 @@ class LoggingConfigCli(PrimaryPort):
         """
         return 0
 
+    @property
+    @classmethod
+    def is_one_shot_compatible(cls) -> bool:
+        """
+        Returns True to indicate this port is compatible with the "one-shot" behavior.
+        :return: True always.
+        :rtype: bool
+        """
+        return True
+
     async def accept(self, app):
         """
         Receives the notification that the system has been accessed from the CLI.
