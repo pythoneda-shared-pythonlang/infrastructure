@@ -39,6 +39,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
     Collaborators:
         - PythonEDAApplication: Requests emitting events.
     """
+    _count = 0
     def __init__(self):
         """
         Creates a new DbusSignalEmitter instance.
@@ -59,8 +60,6 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         :param event: The domain event to emit.
         :type event: pythoneda.event.Event
         """
-
-        await super().emit(event)
         collaborators = self.signal_emitters()
 
         if collaborators:
@@ -82,3 +81,4 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 DbusSignalEmitter.logger().warn(f'No d-bus emitter registered for event {event.__class__}')
         else:
             DbusSignalEmitter.logger().warn(f'No d-bus emitters found')
+        await super().emit(event)

@@ -39,8 +39,8 @@ class OneShotCli(BaseObject, PrimaryPort):
         - PythonEDA subclasses: They are notified back with the information retrieved from the command line.
     """
 
-    @property
     @classmethod
+    @property
     def is_one_shot_compatible(cls) -> bool:
         """
         Returns True to indicate this port is compatible with the "one-shot" behavior.

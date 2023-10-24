@@ -169,17 +169,6 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
         return result
 
-    def _camel_to_snake(self, name:str) -> str:
-        """
-        Converts camel case to snake case.
-        :param name: The name in camel case.
-        :type name: str
-        :return: The snake case version.
-        :rtype: str
-        """
-        s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-        return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
-
     def parse(self, message: Message, signal:str):
         """
         Parses given signal.
@@ -194,7 +183,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         package = ".".join(tokens[:-1])
         # delegate the parsing logic to the dbus event class
         from importlib import import_module
-        module_name = f'{package}.infrastructure.dbus.dbus_{self._camel_to_snake(tokens[-1])}'
+        module_name = f'{package}.infrastructure.dbus.dbus_{self.__class__.camel_to_snake(tokens[-1])}'
         try:
             module = import_module(module_name)
             dbus_event_class = getattr(module, f'Dbus{tokens[-1]}')
@@ -212,4 +201,5 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :param event: The event.
         :type event: pythoneda.Event
         """
+        DbusSignalListener.logger().debug(f"Received d-bus signal: {event}")
         await self.app.accept(event)

@@ -20,5 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
+from .cli_handler import CliHandler
 from .logging_config_cli import LoggingConfigCli
 from .one_shot_cli import OneShotCli

@@ -49,8 +49,8 @@ class LoggingConfigCli(PrimaryPort):
         """
         return 0
 
-    @property
     @classmethod
+    @property
     def is_one_shot_compatible(cls) -> bool:
         """
         Returns True to indicate this port is compatible with the "one-shot" behavior.
