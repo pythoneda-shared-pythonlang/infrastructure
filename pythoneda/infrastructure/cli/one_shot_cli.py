@@ -20,10 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import argparse
 from pythoneda import BaseObject, PrimaryPort
-from pythoneda.shared.artifact_changes import Change
-from pythoneda.shared.artifact_changes.events import StagedChangesCommitted
-from pythoneda.shared.git import GitCommit, GitDiff, GitRepo
-import sys
+
 
 class OneShotCli(BaseObject, PrimaryPort):
 
@@ -55,9 +52,15 @@ class OneShotCli(BaseObject, PrimaryPort):
         :param app: The PythonEDA instance.
         :type app: PythonEDA
         """
-        parser = argparse.ArgumentParser(description="Prevents listening to future events")
+        parser = argparse.ArgumentParser(
+            description="Prevents listening to future events"
+        )
         parser.add_argument(
-            "-1", "--one-shot", action="store_true", required=False, help="The repository folder"
+            "-1",
+            "--one-shot",
+            action="store_true",
+            required=False,
+            help="The repository folder",
         )
         args, unknown_args = parser.parse_known_args()
 
