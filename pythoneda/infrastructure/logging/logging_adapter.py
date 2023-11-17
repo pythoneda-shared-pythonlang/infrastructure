@@ -19,9 +19,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from pythoneda import LoggingPort
+from pythoneda import BaseObject, LoggingPort
 
-class LoggingAdapter(LoggingPort):
+
+class LoggingAdapter(LoggingPort, BaseObject):
     """
     Adapter of Python logging to PythonEDA's LoggingPort.
 
@@ -40,7 +41,7 @@ class LoggingAdapter(LoggingPort):
         """
         super().__init__()
 
-    def logger(self, category:str):
+    def logger(self, category: str):
         """
         Retrieves the logger instance.
         :param category: The logging category.
