@@ -19,8 +19,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
+import argparse
 from pythoneda import BaseObject
+from pythoneda.application import PythonEDA
 import sys
+
 
 class CliHandler(BaseObject, abc.ABC):
 
@@ -36,29 +39,52 @@ class CliHandler(BaseObject, abc.ABC):
         - pythoneda.application.PythonEDA: They are notified back with the information retrieved from the command line.
     """
 
-    def __init__(self, app):
+    def __init__(self, description: str):
         """
         Creates a new CliHandler.
-        :param app: The PythonEDA application.
-        :rtype: pythoneda.application.PythonEDA
+        :param description: The description.
+        :type description: str
         """
         super().__init__()
-        self._app = app
+        self._parser = argparse.ArgumentParser(description=description)
+        self.add_arguments(self._parser)
 
     @property
-    def app(self):
+    def parser(self) -> argparse.ArgumentParser:
         """
-        Retrieves the PythonEDA instance.
+        Retrieves the parser.
         :return: Such instance.
-        :rtype: pythoneda.application.PythonEDA
+        :rtype: argparse.ArgumentParser
         """
-        return self._app
+        return self._parser
 
     @abc.abstractmethod
-    async def handle(self, args):
+    def add_arguments(self, parser: argparse.ArgumentParser):
+        """
+        Defines the specific CLI arguments.
+        :param parser: The parser.
+        :type parser: argparse.ArgumentParser
+        """
+        pass
+
+    async def entrypoint(self, app: PythonEDA):
+        """
+        Receives the notification that the system has been accessed from the CLI.
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.application.PythonEDA
+        """
+        args, unknown_args = self.parser.parse_known_args()
+        await self.handle(app, args)
+
+    @abc.abstractmethod
+    async def handle(self, app: PythonEDA, args: argparse.Namespace):
         """
         Processes the command specified from the command line.
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.application.PythonEDA
         :param args: The CLI args.
-        :type args: argparse.args
+        :type args: argparse.Namespace
         """
-        raise NotImplementedError("'async def handle(self, args)' needs to be implemented in subclasses")
+        raise NotImplementedError(
+            f"'async def handle(self, app, args)' needs to be implemented in {self.__class__}"
+        )

@@ -26,6 +26,7 @@ from pythoneda import EventListenerPort
 import re
 from typing import Dict, List
 
+
 class DbusSignalListener(EventListenerPort, abc.ABC):
     """
     A PrimaryPort that receives events as d-bus signals.
@@ -39,13 +40,15 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
     Collaborators:
         - PythonEDAApplication: Gets notified back with domain events.
     """
+
     def __init__(self):
         """
         Creates a new DbusSignalListener instance.
         """
         super().__init__()
 
-    def priority(self) -> int:
+    @classmethod
+    def priority(cls) -> int:
         """
         Provides the priority information.
         :return: Such priority.
@@ -89,7 +92,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :rtype: List
         """
         result = []
-        tokens = value.split('_')
+        tokens = value.split("_")
         current_token = None
         for token in tokens:
             if token[0].isupper():
@@ -132,20 +135,24 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
                 # Subscribe to the signal
                 await bus.call(
                     Message(
-                        destination='org.freedesktop.DBus',
-                        path='/org/freedesktop/DBus',
-                        interface='org.freedesktop.DBus',
-                        member='AddMatch',
-                        signature='s',
-                        body=[f"type='signal',interface='{fqdn_interface_class}',path='{interface_class.path()}',member='{interface.name}'"]
+                        destination="org.freedesktop.DBus",
+                        path="/org/freedesktop/DBus",
+                        interface="org.freedesktop.DBus",
+                        member="AddMatch",
+                        signature="s",
+                        body=[
+                            f"type='signal',interface='{fqdn_interface_class}',path='{interface_class.path()}',member='{interface.name}'"
+                        ],
                     )
                 )
-                DbusSignalListener.logger().info(f'Subscribed to signal {interface.name} via {interface_class.path()}')
+                DbusSignalListener.logger().info(
+                    f"Subscribed to signal {interface.name} via {interface_class.path()}"
+                )
 
             while True:
                 await asyncio.sleep(1)
         else:
-            DbusSignalListener.logger().warning(f'No receivers configured for {app}!')
+            DbusSignalListener.logger().warning(f"No receivers configured for {app}!")
 
     def process_message(self, message: Message) -> bool:
         """
@@ -156,20 +163,22 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :rtype: bool
         """
         if message.message_type == MessageType.SIGNAL:
-            DbusSignalListener.logger().info(f'Received signal {message.member}')
+            DbusSignalListener.logger().info(f"Received signal {message.member}")
             result = True
             event = self.parse(message, message.member)
             if event:
                 asyncio.create_task(self.listen(event))
             else:
-                DbusSignalListener.logger().warning(f'Discarding unparseable message: {message}')
+                DbusSignalListener.logger().warning(
+                    f"Discarding unparseable message: {message}"
+                )
 
         else:
             result = False
 
         return result
 
-    def parse(self, message: Message, signal:str):
+    def parse(self, message: Message, signal: str):
         """
         Parses given signal.
         :param message: The message.
@@ -183,13 +192,14 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         package = ".".join(tokens[:-1])
         # delegate the parsing logic to the dbus event class
         from importlib import import_module
-        module_name = f'{package}.infrastructure.dbus.dbus_{self.__class__.camel_to_snake(tokens[-1])}'
+
+        module_name = f"{package}.infrastructure.dbus.dbus_{self.__class__.camel_to_snake(tokens[-1])}"
         try:
             module = import_module(module_name)
-            dbus_event_class = getattr(module, f'Dbus{tokens[-1]}')
+            dbus_event_class = getattr(module, f"Dbus{tokens[-1]}")
             result = dbus_event_class.parse(message)
         except ImportError as err:
-            DbusSignalListener.logger().debug(f'Discarding unparseable event: {err}')
+            DbusSignalListener.logger().debug(f"Discarding unparseable event: {err}")
         except Error as err:
             DbusSignalListener.logger().error(err)
 

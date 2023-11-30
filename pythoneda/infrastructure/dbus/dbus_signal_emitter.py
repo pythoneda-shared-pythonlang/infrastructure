@@ -25,6 +25,7 @@ from dbus_next import BusType, Message, MessageType
 from pythoneda import Event, EventEmitter
 from typing import Dict
 
+
 class DbusSignalEmitter(EventEmitter, abc.ABC):
 
     """
@@ -39,7 +40,9 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
     Collaborators:
         - PythonEDAApplication: Requests emitting events.
     """
+
     _count = 0
+
     def __init__(self):
         """
         Creates a new DbusSignalEmitter instance.
@@ -75,10 +78,16 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                         self.__class__.full_class_name(interface_class),
                         instance.name,
                         instance.sign(event),
-                        instance.transform(event)))
-                DbusSignalEmitter.logger().info(f'Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}')
+                        instance.transform(event),
+                    )
+                )
+                DbusSignalEmitter.logger().info(
+                    f"Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}"
+                )
             else:
-                DbusSignalEmitter.logger().warn(f'No d-bus emitter registered for event {event.__class__}')
+                DbusSignalEmitter.logger().warn(
+                    f"No d-bus emitter registered for event {event.__class__}"
+                )
         else:
-            DbusSignalEmitter.logger().warn(f'No d-bus emitters found')
+            DbusSignalEmitter.logger().warn(f"No d-bus emitters found")
         await super().emit(event)

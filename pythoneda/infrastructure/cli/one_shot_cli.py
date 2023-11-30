@@ -18,11 +18,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import argparse
+from .cli_handler import CliHandler
+from argparse import ArgumentParser
 from pythoneda import BaseObject, PrimaryPort
+from pythoneda.application import PythonEDA
 
 
-class OneShotCli(BaseObject, PrimaryPort):
+class OneShotCli(CliHandler, PrimaryPort):
 
     """
     A PrimaryPort to define the option not to listen for future events.
@@ -36,6 +38,12 @@ class OneShotCli(BaseObject, PrimaryPort):
         - PythonEDA subclasses: They are notified back with the information retrieved from the command line.
     """
 
+    def __init__(self):
+        """
+        Creates a new OneShotCli instance.
+        """
+        super().__init__("Prevents listening to future events")
+
     @classmethod
     @property
     def is_one_shot_compatible(cls) -> bool:
@@ -46,15 +54,12 @@ class OneShotCli(BaseObject, PrimaryPort):
         """
         return True
 
-    async def accept(self, app):
+    def add_arguments(self, parser: ArgumentParser):
         """
-        Processes the command specified from the command line.
-        :param app: The PythonEDA instance.
-        :type app: PythonEDA
+        Defines the specific CLI arguments.
+        :param parser: The parser.
+        :type parser: argparse.ArgumentParser
         """
-        parser = argparse.ArgumentParser(
-            description="Prevents listening to future events"
-        )
         parser.add_argument(
             "-1",
             "--one-shot",
@@ -62,6 +67,13 @@ class OneShotCli(BaseObject, PrimaryPort):
             required=False,
             help="The repository folder",
         )
-        args, unknown_args = parser.parse_known_args()
 
+    async def handle(self, app: PythonEDA, args):
+        """
+        Processes the command specified from the command line.
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.application.PythonEDA
+        :param args: The CLI args.
+        :type args: argparse.args
+        """
         await app.accept_one_shot(args.one_shot)

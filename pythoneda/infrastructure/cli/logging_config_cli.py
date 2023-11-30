@@ -18,10 +18,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import argparse
+from .cli_handler import CliHandler
+from argparse import ArgumentParser, Namespace
 from pythoneda import PrimaryPort
+from pythoneda.application import PythonEDA
 
-class LoggingConfigCli(PrimaryPort):
+
+class LoggingConfigCli(CliHandler, PrimaryPort):
 
     """
     A PrimaryPort that configures logging the command line.
@@ -35,13 +38,15 @@ class LoggingConfigCli(PrimaryPort):
     Collaborators:
         - PythonEDAApplication: Gets notified back with the interpreted logging settings.
     """
+
     def __init__(self):
         """
         Creates a new LoggingConfigCli instance.
         """
-        super().__init__()
+        super().__init__("Configures logging")
 
-    def priority(self) -> int:
+    @classmethod
+    def priority(cls) -> int:
         """
         Provides the priority information.
         :return: Such priority.
@@ -59,20 +64,39 @@ class LoggingConfigCli(PrimaryPort):
         """
         return True
 
-    async def accept(self, app):
+    def add_arguments(self, parser: ArgumentParser):
         """
-        Receives the notification that the system has been accessed from the CLI.
-        :param app: The PythonEDAApplication instance.
-        :type app: pythonedaapplication.PythonEDAApplication
+        Defines the specific CLI arguments.
+        :param parser: The parser.
+        :type parser: argparse.ArgumentParser
         """
-        parser = argparse.ArgumentParser(
-            description="Catches logging flags from the command line"
+        parser.add_argument(
+            "-v", "--info", action="store_true", help="Enable info mode"
         )
-        parser.add_argument('-v', '--verbose', action='store_true', help="Enable verbose mode")
-        parser.add_argument('-vv', '--trace', action='store_true', help="Enable tracing mode")
-        parser.add_argument('-q', '--quiet', action='store_true', help="Enable quiet mode")
-        args, unknown_args = parser.parse_known_args()
+        parser.add_argument(
+            "-vv", "--debug", action="store_true", help="Enable debug mode"
+        )
+        parser.add_argument(
+            "-q", "--quiet", action="store_true", help="Enable quiet mode"
+        )
+
+    async def handle(self, app: PythonEDA, args: Namespace):
+        """
+        Processes the command specified from the command line.
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.application.PythonEDA
+        :param args: The CLI args.
+        :type args: argparse.args
+        """
         info = True
+        debug = args.debug
         if args.quiet:
             info = False
-        await app.accept_configure_logging({ "verbose": args.verbose, "info": info, "trace": args.trace, "quiet": args.quiet })
+            debug = False
+        await app.accept_configure_logging(
+            {
+                "debug": debug,
+                "info": info,
+                "quiet": args.quiet,
+            }
+        )
