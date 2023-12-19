@@ -112,7 +112,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
         return result
 
-    async def accept(self, app):
+    async def entrypoint(self, app):
         """
         Receives the notification to connect to d-bus.
         :param app: The PythonEDAApplication instance.

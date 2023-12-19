@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import logging
 import sys
 
+
 def next_higher_level(level: int):
     """
     Retrieves the level next to the given one.
@@ -29,13 +30,20 @@ def next_higher_level(level: int):
     :return: The next level.
     :rtype: int
     """
-    levels = [logging.CRITICAL, logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+    levels = [
+        logging.CRITICAL,
+        logging.ERROR,
+        logging.WARNING,
+        logging.INFO,
+        logging.DEBUG,
+    ]
     for i, current_level in enumerate(levels):
         if level == current_level:
             return levels[i - 1] if i > 0 else current_level
     return level
 
-def configure_logging(info:bool, debug:bool, quiet:bool):
+
+def configure_logging(info: bool, debug: bool, quiet: bool):
     """
     Configures the logging system.
     :param info: Whether informational messages are allowed.
@@ -63,8 +71,8 @@ def configure_logging(info:bool, debug:bool, quiet:bool):
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(level)
     formatter = logging.Formatter(
-        '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        datefmt='%Y-%m-%d %H:%M:%S'
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
     console_handler.setFormatter(formatter)
     default_logger.setLevel(level)
@@ -76,6 +84,6 @@ def configure_logging(info:bool, debug:bool, quiet:bool):
     pythoneda_logger = logging.getLogger("pythoneda")
     pythoneda_logger.setLevel(default_level)
 
-    for name in [ "asyncio", "git", "urllib3.connectionpool" ]:
+    for name in ["asyncio", "git", "urllib3.connectionpool"]:
         logger = logging.getLogger(name)
         logger.setLevel(next_level)

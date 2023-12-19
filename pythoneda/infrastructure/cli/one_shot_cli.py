@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .cli_handler import CliHandler
 from argparse import ArgumentParser
 from pythoneda import BaseObject, PrimaryPort
-from pythoneda.application import PythonEDA
 
 
 class OneShotCli(CliHandler, PrimaryPort):
@@ -68,7 +67,7 @@ class OneShotCli(CliHandler, PrimaryPort):
             help="The repository folder",
         )
 
-    async def handle(self, app: PythonEDA, args):
+    async def handle(self, app, args):
         """
         Processes the command specified from the command line.
         :param app: The PythonEDA instance.
@@ -76,4 +75,4 @@ class OneShotCli(CliHandler, PrimaryPort):
         :param args: The CLI args.
         :type args: argparse.args
         """
-        await app.accept_one_shot(args.one_shot)
+        app.accept_one_shot(args.one_shot)

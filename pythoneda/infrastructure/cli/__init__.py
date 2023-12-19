@@ -18,8 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+__path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
+from .abstract_cli_handler import AbstractCliHandler
 from .cli_handler import CliHandler
 from .logging_config_cli import LoggingConfigCli
 from .one_shot_cli import OneShotCli

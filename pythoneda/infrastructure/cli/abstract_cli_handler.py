@@ -1,7 +1,7 @@
 """
-pythoneda/infrastructure/cli/cli_handler.py
+pythoneda/infrastructure/cli/abstract_cli_handler.py
 
-This file defines the CliHandler class.
+This file defines the AbstractCliHandler class.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
@@ -20,19 +20,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
 import argparse
-from .abstract_cli_handler import AbstractCliHandler
+from pythoneda import BaseObject
 import sys
 
 
-class CliHandler(AbstractCliHandler, abc.ABC):
+class AbstractCliHandler(BaseObject, abc.ABC):
 
     """
-    Base class for CLI handlers.
+    Abstract base class for CLI handlers.
 
-    Class name: CliHandler
+    Class name: AbstractCliHandler
 
     Responsibilities:
-        - Handles the CLI based on certain criteria.
+        - Provides parser and layout for subclasses.
 
     Collaborators:
         - pythoneda.application.PythonEDA: They are notified back with the information retrieved from the command line.
@@ -40,30 +40,28 @@ class CliHandler(AbstractCliHandler, abc.ABC):
 
     def __init__(self, description: str):
         """
-        Creates a new CliHandler.
+        Creates a new AbstractCliHandler.
         :param description: The description.
         :type description: str
         """
-        super().__init__(description)
+        super().__init__()
+        self._parser = argparse.ArgumentParser(description=description)
+        self.add_arguments(self._parser)
 
-    async def entrypoint(self, app):
+    @property
+    def parser(self) -> argparse.ArgumentParser:
         """
-        Receives the notification that the system has been accessed from the CLI.
-        :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
+        Retrieves the parser.
+        :return: Such instance.
+        :rtype: argparse.ArgumentParser
         """
-        args, unknown_args = self.parser.parse_known_args()
-        await self.handle(app, args)
+        return self._parser
 
     @abc.abstractmethod
-    async def handle(self, app, args: argparse.Namespace):
+    def add_arguments(self, parser: argparse.ArgumentParser):
         """
-        Processes the command specified from the command line.
-        :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
-        :param args: The CLI args.
-        :type args: argparse.Namespace
+        Defines the specific CLI arguments.
+        :param parser: The parser.
+        :type parser: argparse.ArgumentParser
         """
-        raise NotImplementedError(
-            f"'async def handle(self, app, args)' needs to be implemented in {self.__class__}"
-        )
+        pass
