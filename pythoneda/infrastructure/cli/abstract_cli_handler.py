@@ -20,11 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
 import argparse
-from pythoneda import BaseObject
+from pythoneda import BaseObject, PrimaryPort
 import sys
 
 
-class AbstractCliHandler(BaseObject, abc.ABC):
+class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
 
     """
     Abstract base class for CLI handlers.

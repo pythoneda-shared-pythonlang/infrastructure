@@ -22,5 +22,6 @@ __path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
 from .abstract_cli_handler import AbstractCliHandler
 from .cli_handler import CliHandler
+from .forward_event_cli import ForwardEventCli
 from .logging_config_cli import LoggingConfigCli
 from .one_shot_cli import OneShotCli

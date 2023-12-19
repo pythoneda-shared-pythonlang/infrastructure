@@ -200,7 +200,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
             result = dbus_event_class.parse(message)
         except ImportError as err:
             DbusSignalListener.logger().debug(f"Discarding unparseable event: {err}")
-        except Error as err:
+        except Exception as err:
             DbusSignalListener.logger().error(err)
 
         return result
