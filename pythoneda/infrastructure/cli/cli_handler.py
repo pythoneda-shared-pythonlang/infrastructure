@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 import argparse
 from .abstract_cli_handler import AbstractCliHandler
-import sys
 
 
 class CliHandler(AbstractCliHandler, abc.ABC):

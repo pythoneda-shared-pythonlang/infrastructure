@@ -88,7 +88,7 @@ class ForwardEventCli(CliHandler, abc.ABC):
             f"'def build_event(self, app, args)' needs to be implemented in {self.__class__}"
         )
 
-    async def emit_event(cls, event: Event):
+    async def emit_event(self, event: Event):
         """
         Emits given event.
         :param event: The event.

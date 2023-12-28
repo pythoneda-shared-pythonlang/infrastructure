@@ -23,7 +23,6 @@ import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
 from pythoneda import EventListenerPort
-import re
 from typing import Dict, List
 
 
@@ -46,6 +45,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         Creates a new DbusSignalListener instance.
         """
         super().__init__()
+        self._app = None
 
     @classmethod
     def priority(cls) -> int:
@@ -58,18 +58,18 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
     async def set_app(self, app):
         """
-        Specifies the PythoneEDA instance.
+        Specifies the PythonEDA instance.
         :param app: The PythonEDA instance.
-        :type app: PythonEDA from pythonedaapplication.pythoneda
+        :type app: pythoneda.application.PythonEDA
         """
         self._app = app
 
     @property
     def app(self):
         """
-        Retrieves the PythoneEDA instance.
+        Retrieves the PythonEDA instance.
         :return: The PythonEDA instance.
-        :rtype: PythonEDA from pythonedaapplication.pythoneda
+        :rtype: pythoneda.application.pythonEDA
         """
         return self._app
 
@@ -77,7 +77,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         """
         Retrieves the configured signal receivers.
         :param app: The PythonEDA instance.
-        :type app: PythonEDA from pythonedaapplication.pythoneda
+        :type app: pythoneda.application.PythonEDA
         :return: A dictionary with the signal name as key, and the tuple interface and bus type as the value.
         :rtype: Dict
         """

@@ -20,13 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
 import asyncio
-from concurrent import futures
 import grpc
-import json
 import logging
 from pythoneda import Event, PrimaryPort
-import time
-from typing import Dict
+
 
 class GrpcServer(PrimaryPort, abc.ABC):
     """
@@ -51,6 +48,7 @@ class GrpcServer(PrimaryPort, abc.ABC):
         :type port: int
         """
         super().__init__()
+        self._app = None
         if port:
             self._insecure_port = port
         else:

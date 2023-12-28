@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 import argparse
 from pythoneda import BaseObject, PrimaryPort
-import sys
 
 
 class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
