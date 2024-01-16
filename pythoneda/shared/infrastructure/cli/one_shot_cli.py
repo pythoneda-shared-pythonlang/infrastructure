@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/cli/one_shot_cli.py
+pythoneda/shared/infrastructure/cli/one_shot_cli.py
 
 This file defines the OneShotCli class.
 
@@ -20,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .cli_handler import CliHandler
 from argparse import ArgumentParser
-from pythoneda import BaseObject, PrimaryPort
+from pythoneda.shared import BaseObject, PrimaryPort
 
 
 class OneShotCli(CliHandler, PrimaryPort):

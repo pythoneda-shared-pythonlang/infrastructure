@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/cli/abstract_cli_handler.py
+pythoneda/shared/infrastructure/cli/abstract_cli_handler.py
 
 This file defines the AbstractCliHandler class.
 
@@ -20,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
 import argparse
-from pythoneda import BaseObject, PrimaryPort
+from pythoneda.shared import BaseObject, PrimaryPort
 
 
 class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):

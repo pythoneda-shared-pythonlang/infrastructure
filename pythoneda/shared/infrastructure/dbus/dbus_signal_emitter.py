@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/dbus/dbus_signal_emitter.py
+pythoneda/shared/infrastructure/dbus/dbus_signal_emitter.py
 
 This file defines the DbusSignalEmitter class.
 
@@ -21,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-from pythoneda import Event, EventEmitter
+from pythoneda.shared import Event, EventEmitter
 from typing import Dict
 
 
@@ -37,7 +38,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         - Translate domain events to d-bus signals.
 
     Collaborators:
-        - PythonEDAApplication: Requests emitting events.
+        - pythoneda.shared.application.PythonEDA: Requests emitting events.
     """
 
     _count = 0

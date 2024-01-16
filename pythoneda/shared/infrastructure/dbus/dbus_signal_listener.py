@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/dbus/dbus_signal_listener.py
+pythoneda/shared/infrastructure/dbus/dbus_signal_listener.py
 
 This file defines the DbusSignalListener class.
 
@@ -22,7 +23,7 @@ import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-from pythoneda import EventListenerPort
+from pythoneda.shared import EventListenerPort
 from typing import Dict, List
 
 
@@ -37,7 +38,7 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         - Translate d-bus signals to domain events.
 
     Collaborators:
-        - PythonEDAApplication: Gets notified back with domain events.
+        - pythoneda.shared.application.PythonEDA: Gets notified back with domain events.
     """
 
     def __init__(self):

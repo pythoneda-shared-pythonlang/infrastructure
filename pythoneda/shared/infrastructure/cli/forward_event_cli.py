@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/cli/forward_event_cli.py
+pythoneda/shared/infrastructure/cli/forward_event_cli.py
 
 This file defines the ForwardEventCli class.
 
@@ -21,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 from .cli_handler import CliHandler
 import abc
 import argparse
-from pythoneda import Event, EventEmitter, listen, Ports
+from pythoneda.shared import Event, EventEmitter, listen, Ports
 
 
 class ForwardEventCli(CliHandler, abc.ABC):
@@ -47,7 +48,6 @@ class ForwardEventCli(CliHandler, abc.ABC):
         :type description: str
         """
         super().__init__(description)
-        print("in init")
 
     @classmethod
     @property
@@ -69,7 +69,6 @@ class ForwardEventCli(CliHandler, abc.ABC):
         """
         args, unknown_args = self.parser.parse_known_args()
         event = self.build_event(app, args)
-        print(f"event -> {event}")
         if event is not None:
             await self.emit_event(event)
 

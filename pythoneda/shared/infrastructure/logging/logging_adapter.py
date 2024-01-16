@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/logging/logging_adapter.py
+pythoneda/shared/infrastructure/logging/logging_adapter.py
 
 This file configures PythonEDA to use the default Python logging.
 
@@ -19,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import logging
-from pythoneda import BaseObject, LoggingPort
+from pythoneda.shared import BaseObject, LoggingPort
 
 
 class LoggingAdapter(LoggingPort, BaseObject):

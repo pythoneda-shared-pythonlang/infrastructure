@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/logging/logging_config.py
+pythoneda/shared/infrastructure/logging/logging_config.py
 
 This file configures PythonEDA logging.
 

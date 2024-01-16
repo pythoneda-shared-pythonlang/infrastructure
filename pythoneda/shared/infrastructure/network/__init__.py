@@ -1,7 +1,8 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/logging/__init__.py
+pythoneda/shared/infrastructure/network/__init__.py
 
-This file ensures pythoneda.infrastructure.logging is a package.
+This file ensures pythoneda.shared.infrastructure.network is a namespace.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
@@ -19,5 +20,3 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
-
-from .logging_adapter import LoggingAdapter

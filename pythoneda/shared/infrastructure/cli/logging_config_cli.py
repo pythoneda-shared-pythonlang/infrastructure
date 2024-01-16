@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/cli/logging_config_cli.py
+pythoneda/shared/infrastructure/cli/logging_config_cli.py
 
 This file parses the logging config from the command-line interface for PythonEDA-Application base.
 
@@ -20,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .abstract_cli_handler import AbstractCliHandler
 from argparse import ArgumentParser, Namespace
-from pythoneda import PrimaryPort
+from pythoneda.shared import PrimaryPort
 
 
 class LoggingConfigCli(AbstractCliHandler, PrimaryPort):

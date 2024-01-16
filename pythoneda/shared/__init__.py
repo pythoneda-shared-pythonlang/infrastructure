@@ -1,7 +1,8 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/dbus/__init__.py
+pythoneda/shared/__init__.py
 
-This file ensures pythoneda.infrastructure.dbus is a package.
+This file ensures pythoneda.shared is a namespace.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
@@ -18,7 +19,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-__path__ = __import__('pkgutil').extend_path(__path__, __name__)
-
-from .dbus_signal_emitter import DbusSignalEmitter
-from .dbus_signal_listener import DbusSignalListener
+__path__ = __import__("pkgutil").extend_path(__path__, __name__)

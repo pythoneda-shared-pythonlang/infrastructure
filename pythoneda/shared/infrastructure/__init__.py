@@ -1,8 +1,8 @@
 # vim: set fileencoding=utf-8
 """
-pythoneda/__init__.py
+pythoneda/shared/infrastructure/__init__.py
 
-This file ensures pythoneda is a namespace.
+This file ensures pythoneda.shared.infrastructure is a namespace.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
 
@@ -19,4 +19,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+__path__ = __import__("pkgutil").extend_path(__path__, __name__)

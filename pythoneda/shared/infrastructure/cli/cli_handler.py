@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/cli/cli_handler.py
+pythoneda/shared/infrastructure/cli/cli_handler.py
 
 This file defines the CliHandler class.
 

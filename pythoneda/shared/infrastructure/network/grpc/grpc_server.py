@@ -1,5 +1,6 @@
+# vim: set fileencoding=utf-8
 """
-pythoneda/infrastructure/network/grpc/grpc_server.py
+pythoneda/shared/infrastructure/network/grpc/grpc_server.py
 
 Base class for gRPC servers on PythonEDA applications.
 
@@ -22,7 +23,7 @@ import abc
 import asyncio
 import grpc
 import logging
-from pythoneda import Event, PrimaryPort
+from pythoneda.shared import Event, PrimaryPort
 
 
 class GrpcServer(PrimaryPort, abc.ABC):
@@ -39,7 +40,7 @@ class GrpcServer(PrimaryPort, abc.ABC):
         - pythoneda.application.PythonEDA: Sends notifications when the application is launched via CLI.
     """
 
-    _default_insecure_port = '[::]:50051'
+    _default_insecure_port = "[::]:50051"
 
     def __init__(self, port=None):
         """
@@ -118,6 +119,8 @@ class GrpcServer(PrimaryPort, abc.ABC):
         server = grpc.aio.server()
         self.add_servicers(server, app)
         server.add_insecure_port(self._insecure_port)
-        logging.getLogger(__name__).info(f'gRPC server listening at {self.insecure_port}')
+        logging.getLogger(__name__).info(
+            f"gRPC server listening at {self.insecure_port}"
+        )
         await server.start()
         await server.wait_for_termination()
