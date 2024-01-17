@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/dbus/__init__.py
 
 This file ensures pythoneda.shared.infrastructure.dbus is a package.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared-pythoneda/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
