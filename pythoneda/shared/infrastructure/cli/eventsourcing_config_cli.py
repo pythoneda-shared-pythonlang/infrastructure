@@ -137,3 +137,11 @@ class EventsourcingConfigCli(AbstractCliHandler, PrimaryPort):
         except IOError:
             # If the file cannot be read (e.g., not found, no read permissions), return None
             return None
+# vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
+# Local Variables:
+# mode: python
+# python-indent-offset: 4
+# tab-width: 4
+# indent-tabs-mode: nil
+# fill-column: 79
+# End:

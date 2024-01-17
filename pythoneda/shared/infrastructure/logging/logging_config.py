@@ -88,3 +88,11 @@ def configure_logging(info: bool, debug: bool, quiet: bool):
     for name in ["asyncio", "git", "urllib3.connectionpool"]:
         logger = logging.getLogger(name)
         logger.setLevel(next_level)
+# vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
+# Local Variables:
+# mode: python
+# python-indent-offset: 4
+# tab-width: 4
+# indent-tabs-mode: nil
+# fill-column: 79
+# End:
