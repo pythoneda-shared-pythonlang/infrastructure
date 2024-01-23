@@ -109,6 +109,8 @@ class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
                 "quiet": args.quiet,
             }
         )
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

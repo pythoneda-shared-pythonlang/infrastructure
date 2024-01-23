@@ -48,6 +48,15 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         self._parser = argparse.ArgumentParser(description=description)
         self.add_arguments(self._parser)
 
+    @classmethod
+    def instantiate(cls):
+        """
+        Creates an instance.
+        :return: The new instance.
+        :rtype: pythoneda.Port
+        """
+        return cls()
+
     @property
     def parser(self) -> argparse.ArgumentParser:
         """
@@ -65,6 +74,8 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         :type parser: argparse.ArgumentParser
         """
         pass
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python
