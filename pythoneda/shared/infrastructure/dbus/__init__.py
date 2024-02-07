@@ -21,8 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
+from .dbus_event import DbusEvent
+from .dbus_signals import DbusSignals
 from .dbus_signal_emitter import DbusSignalEmitter
 from .dbus_signal_listener import DbusSignalListener
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

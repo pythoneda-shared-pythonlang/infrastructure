@@ -19,14 +19,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import abc
-from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-from pythoneda.shared import Event, EventEmitter
-from typing import Dict
+from dbus_next.aio import MessageBus
+from dbus_next.errors import SignatureBodyMismatchError
+from .dbus_event import DbusEvent
+from .dbus_signals import DbusSignals
+from pythoneda.shared import attribute, Event, EventEmitter
+from typing import Dict, Type
 
 
-class DbusSignalEmitter(EventEmitter, abc.ABC):
+class DbusSignalEmitter(EventEmitter):
 
     """
     A Port that emits events as d-bus signals.
@@ -43,19 +45,32 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
 
     _count = 0
 
-    def __init__(self):
+    def __init__(self, dbusEventsPackage: str):
         """
         Creates a new DbusSignalEmitter instance.
+        :params dbusEventsPackage: The package with the d-bus events.
+        :type dbusEventsPackage: str
         """
         super().__init__()
+        self._signals = DbusSignals(dbusEventsPackage)
 
-    def signal_emitters(self) -> Dict:
+    @property
+    @attribute
+    def signals(self) -> DbusSignals:
+        """
+        Retrieves the d-bus signals.
+        :return: The DbusSignals instance.
+        :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
+        """
+        return self._signals
+
+    def signal_emitters(self) -> Dict[str, Type[DbusEvent]]:
         """
         Retrieves the configured event emitters.
-        :return: For each event, a list with the event interface and the bus type.
-        :rtype: Dict
+        :return: For each event, the d-bus implementation.
+        :rtype: Dict[str, Type[pythoneda.shared.infrastructure.dbus.DbusEvent]]
         """
-        return {}
+        return self.signals.signals()
 
     async def emit(self, event: Event):
         """
@@ -68,22 +83,29 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         if collaborators:
             event_class_name = self.__class__.full_class_name(event.__class__)
             if event_class_name in collaborators:
-                interface_class, bus_type = collaborators[event_class_name]
+                interface_class = collaborators[event_class_name]
                 instance = interface_class()
-                bus = await MessageBus(bus_type=bus_type).connect()
-                bus.export(interface_class.path(), instance)
-                await bus.send(
-                    Message.new_signal(
-                        interface_class.path(),
-                        self.__class__.full_class_name(interface_class),
-                        instance.name,
-                        instance.sign(event),
-                        instance.transform(event),
+                bus = await MessageBus(bus_type=instance.bus_type).connect()
+                bus.export(instance.path, instance)
+                try:
+                    await bus.send(
+                        Message.new_signal(
+                            instance.path,
+                            self.__class__.full_class_name(interface_class),
+                            instance.name,
+                            instance.sign(event),
+                            instance.transform(event),
+                        )
                     )
-                )
-                DbusSignalEmitter.logger().info(
-                    f"Sent signal {interface_class.__module__}.{interface_class.__name__} on path {interface_class.path()} to d-bus {bus_type}"
-                )
+                    DbusSignalEmitter.logger().info(
+                        f"Sent signal {interface_class.__module__}.{interface_class.__name__} on path {instance.path} to d-bus {instance.bus_type}"
+                    )
+                except SignatureBodyMismatchError as mismatch:
+                    DbusSignalEmitter.logger().error(
+                        f"Bad implementation of class {event.__class__}"
+                    )
+                    DbusSignalEmitter.logger().error(mismatch)
+
             else:
                 DbusSignalEmitter.logger().warn(
                     f"No d-bus emitter registered for event {event.__class__}"
@@ -91,6 +113,8 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         else:
             DbusSignalEmitter.logger().warn(f"No d-bus emitters found")
         await super().emit(event)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

@@ -19,15 +19,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
-from pythoneda.shared import EventListenerPort
-from typing import Dict, List
+from .dbus_event import DbusEvent
+from .dbus_signals import DbusSignals
+from pythoneda.shared import attribute, EventListenerPort
+from typing import Dict, List, Type
 
 
-class DbusSignalListener(EventListenerPort, abc.ABC):
+class DbusSignalListener(EventListenerPort):
     """
     A PrimaryPort that receives events as d-bus signals.
 
@@ -41,12 +42,25 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         - pythoneda.shared.application.PythonEDA: Gets notified back with domain events.
     """
 
-    def __init__(self):
+    def __init__(self, dbusEventsPackage: str):
         """
         Creates a new DbusSignalListener instance.
+        :params dbusEventsPackage: The package with the d-bus events.
+        :type dbusEventsPackage: str
         """
         super().__init__()
         self._app = None
+        self._signals = DbusSignals(dbusEventsPackage)
+
+    @property
+    @attribute
+    def signals(self) -> DbusSignals:
+        """
+        Retrieves the d-bus signals.
+        :return: The DbusSignals instance.
+        :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
+        """
+        return self._signals
 
     @classmethod
     def priority(cls) -> int:
@@ -74,15 +88,15 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         """
         return self._app
 
-    def signal_receivers(self, app) -> Dict:
+    def signal_receivers(self, app) -> Dict[str, Type[DbusEvent]]:
         """
         Retrieves the configured signal receivers.
         :param app: The PythonEDA instance.
         :type app: pythoneda.application.PythonEDA
-        :return: A dictionary with the signal name as key, and the tuple interface and bus type as the value.
-        :rtype: Dict
+        :return: For each event, the d-bus implementation.
+        :rtype: Dict[str, Type[pythoneda.shared.infrastructure.dbus.DbusEvent]]
         """
-        return {}
+        return self.signals.signals()
 
     def parse_signal_name(self, value) -> List:
         """
@@ -125,11 +139,11 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
         if receivers:
             for signal_name, value in receivers:
-                interface_class, bus_type = value
-                interface = interface_class()
+                interface_class = value
+                instance = interface_class()
 
                 fqdn_interface_class = self.__class__.full_class_name(interface_class)
-                bus = await MessageBus(bus_type=BusType.SYSTEM).connect()
+                bus = await MessageBus(bus_type=instance.bus_type).connect()
 
                 bus.add_message_handler(self.process_message)
 
@@ -142,12 +156,12 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
                         member="AddMatch",
                         signature="s",
                         body=[
-                            f"type='signal',interface='{fqdn_interface_class}',path='{interface_class.path()}',member='{interface.name}'"
+                            f"type='signal',interface='{fqdn_interface_class}',path='{instance.path}',member='{instance.name}'"
                         ],
                     )
                 )
                 DbusSignalListener.logger().info(
-                    f"Subscribed to signal {interface.name} via {interface_class.path()}"
+                    f"Subscribed to signal {interface.name} via {interface.path}"
                 )
 
             while True:
@@ -214,6 +228,8 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         """
         DbusSignalListener.logger().debug(f"Received d-bus signal: {event}")
         await self.app.accept(event)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python
