@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/cli/__init__.py
 
 This file ensures pythoneda.shared.infrastructure.cli is a package.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ from .cli_handler import CliHandler
 from .forward_event_cli import ForwardEventCli
 from .logging_config_cli import LoggingConfigCli
 from .one_shot_cli import OneShotCli
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

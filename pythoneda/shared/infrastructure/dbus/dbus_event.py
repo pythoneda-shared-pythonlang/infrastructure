@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/dbus/dbus_event.py
 
 This file defines the DbusEvent class.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/cli/one_shot_cli.py
 
 This file defines the OneShotCli class.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -77,6 +77,8 @@ class OneShotCli(CliHandler, PrimaryPort):
         :type args: argparse.args
         """
         app.accept_one_shot(args.one_shot)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

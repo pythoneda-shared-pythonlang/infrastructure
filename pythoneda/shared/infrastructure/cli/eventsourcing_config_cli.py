@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/cli/eventsourcing_config_cli.py
 
 This file provides event-sourcing configuration to the PythonEDA application.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -137,6 +137,8 @@ class EventsourcingConfigCli(AbstractCliHandler, PrimaryPort):
         except IOError:
             # If the file cannot be read (e.g., not found, no read permissions), return None
             return None
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

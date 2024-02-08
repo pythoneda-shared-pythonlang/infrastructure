@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/cli/cli_handler.py
 
 This file defines the CliHandler class.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -67,6 +67,8 @@ class CliHandler(AbstractCliHandler, abc.ABC):
         raise NotImplementedError(
             f"'async def handle(self, app, args)' needs to be implemented in {self.__class__}"
         )
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

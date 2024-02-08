@@ -1,20 +1,20 @@
 # Infrastructure
 
-Shared kernel for infrastructure layers.
+Shared library for infrastructure layers.
 
 ## How to declare it in your flake
 
-Check the latest tag of the artifact repository: https://github.com/pythoneda-shared-pythoneda/infrastructure-artifact/tags, and use it instead of the `[version]` placeholder below.
+Check the latest tag of the definition repository: <https://github.com/pythoneda-shared-pythonlang-def/infrastructure/tags>, and use it instead of the `[version]` placeholder below.
 
 ```nix
 {
   description = "[..]";
   inputs = rec {
     [..]
-    pythoneda-shared-pythoneda-infrastructure = {
+    pythoneda-shared-pythonlang-infrastructure = {
       [optional follows]
       url =
-        "github:pythoneda-shared-pythoneda/infrastructure-artifact/[version]?dir=infrastructure";
+        "github:pythoneda-shared-pythonlang-def/infrastructure/[version]";
     };
   };
   outputs = [..]
@@ -22,5 +22,5 @@ Check the latest tag of the artifact repository: https://github.com/pythoneda-sh
 ```
 
 Should you use another PythonEDA modules, you might want to pin those also used by this project. The same applies to nixos/nixpkgs and flake-utils.
-The Nix flake is under the `infrastructure` folder of https://github.com/pythoneda-shared-pythoneda/infrastructure-artifact.
+The Nix flake is hosted in its [https://github.com/pythoneda-shared-pythonlang-def/infrastructure](definition "definition") repository.
 
