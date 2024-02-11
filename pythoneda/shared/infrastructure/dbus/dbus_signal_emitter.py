@@ -107,12 +107,13 @@ class DbusSignalEmitter(EventEmitter):
                     DbusSignalEmitter.logger().error(mismatch)
 
             else:
-                DbusSignalEmitter.logger().warn(
-                    f"No d-bus emitter registered for event {event.__class__}"
+                DbusSignalEmitter.logger().error(
+                    f"No d-bus emitter registered for event {event.__class__} ({event})"
                 )
         else:
-            DbusSignalEmitter.logger().warn(f"No d-bus emitters found")
-        await super().emit(event)
+            DbusSignalEmitter.logger().error(f"No d-bus emitters found")
+
+        return await super().emit(event)
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
