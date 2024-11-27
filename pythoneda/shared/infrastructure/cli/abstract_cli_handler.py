@@ -25,7 +25,6 @@ from pythoneda.shared import BaseObject, PrimaryPort
 
 
 class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
-
     """
     Abstract base class for CLI handlers.
 
@@ -38,6 +37,8 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         - pythoneda.application.PythonEDA: They are notified back with the information retrieved from the command line.
     """
 
+    _parser = argparse.ArgumentParser(conflict_handler="resolve", add_help=True)
+
     def __init__(self, description: str):
         """
         Creates a new AbstractCliHandler.
@@ -45,7 +46,6 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         :type description: str
         """
         super().__init__()
-        self._parser = argparse.ArgumentParser(description=description)
         self.add_arguments(self._parser)
 
     @classmethod

@@ -161,7 +161,7 @@ class DbusSignalListener(EventListenerPort):
                     )
                 )
                 DbusSignalListener.logger().info(
-                    f"Subscribed to signal {interface.name} via {interface.path}"
+                    f"Subscribed to signal {instance.name} via {instance.path}"
                 )
 
             while True:
