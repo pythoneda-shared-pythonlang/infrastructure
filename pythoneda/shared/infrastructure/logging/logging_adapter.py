@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/logging/logging_adapter.py
 
 This file configures PythonEDA to use the default Python logging.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@ class LoggingAdapter(LoggingPort, BaseObject):
         :rtype: logging.Logger
         """
         return logging.getLogger(category)
+
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python

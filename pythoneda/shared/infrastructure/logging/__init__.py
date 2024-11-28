@@ -4,7 +4,7 @@ pythoneda/shared/infrastructure/logging/__init__.py
 
 This file ensures pythoneda.shared.infrastructure.logging is a package.
 
-Copyright (C) 2023-today rydnr's pythoneda-shared/infrastructure
+Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
 from .logging_adapter import LoggingAdapter
+
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:
 # mode: python
