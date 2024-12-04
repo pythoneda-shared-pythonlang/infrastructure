@@ -141,9 +141,10 @@ class DbusSignalListener(EventListenerPort):
             for signal_name, value in receivers:
                 interface_class = value[0]
                 instance = interface_class()
-
+                bus_type = value[1]
+                path = instance.path
                 fqdn_interface_class = self.__class__.full_class_name(interface_class)
-                bus = await MessageBus(bus_type=value[1]).connect()
+                bus = await MessageBus(bus_type=bus_type).connect()
 
                 bus.add_message_handler(self.process_message)
 
@@ -156,12 +157,12 @@ class DbusSignalListener(EventListenerPort):
                         member="AddMatch",
                         signature="s",
                         body=[
-                            f"type='signal',interface='{fqdn_interface_class}',path='{instance.path}',member='{instance.name}'"
+                            f"type='signal',interface='{fqdn_interface_class}',path='{path}',member='{instance.name}'"
                         ],
                     )
                 )
                 DbusSignalListener.logger().debug(
-                    f"Subscribed to signal {instance.name} via {instance.path}"
+                    f"Subscribed to signal {instance.name} via {path}"
                 )
 
             while True:

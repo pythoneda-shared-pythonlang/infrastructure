@@ -82,22 +82,25 @@ class DbusSignalEmitter(EventEmitter):
         if collaborators:
             event_class_name = self.__class__.full_class_name(event.__class__)
             if event_class_name in collaborators:
-                interface_class = collaborators[event_class_name]
-                instance = interface_class()
-                bus = await MessageBus(bus_type=instance.bus_type).connect()
-                bus.export(instance.path, instance)
+                impl_details = collaborators[event_class_name]
+                instance_class = impl_details[0]
+                instance = instance_class()
+                path = instance.build_path(event)
+                bus_type = impl_details[1]
+                bus = await MessageBus(bus_type=bus_type).connect()
+                bus.export(path, instance)
                 try:
                     await bus.send(
                         Message.new_signal(
-                            instance.build_path(event),
-                            self.__class__.full_class_name(interface_class),
+                            path,
+                            self.__class__.full_class_name(instance_class),
                             instance.name,
                             instance.sign(event),
                             instance.transform(event),
                         )
                     )
                     DbusSignalEmitter.logger().info(
-                        f"Sent signal {interface_class.__module__}.{interface_class.__name__} on path {instance.path} to d-bus {instance.bus_type}"
+                        f"Sent signal {instance_class.__module__}.{instance_class.__name__} on path {path} to d-bus {bus_type}"
                     )
                 except SignatureBodyMismatchError as mismatch:
                     DbusSignalEmitter.logger().error(
