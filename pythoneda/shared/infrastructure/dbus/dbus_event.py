@@ -72,6 +72,16 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         """
         return self._bus_type
 
+    def build_path(self, event: Event) -> str:
+        """
+        Retrieves the d-bus path for given event.
+        :param event: The event.
+        :type event: pythoneda.shared.Event
+        :return: Such value.
+        :rtype: str
+        """
+        return self.path
+
     @classmethod
     @abc.abstractmethod
     def transform(cls, event: Event) -> List[str]:

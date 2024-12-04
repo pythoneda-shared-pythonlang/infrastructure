@@ -29,7 +29,6 @@ from typing import Dict, Type
 
 
 class DbusSignalEmitter(EventEmitter):
-
     """
     A Port that emits events as d-bus signals.
 
@@ -90,7 +89,7 @@ class DbusSignalEmitter(EventEmitter):
                 try:
                     await bus.send(
                         Message.new_signal(
-                            instance.path,
+                            instance.build_path(event),
                             self.__class__.full_class_name(interface_class),
                             instance.name,
                             instance.sign(event),
