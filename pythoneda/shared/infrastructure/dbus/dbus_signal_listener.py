@@ -50,6 +50,7 @@ class DbusSignalListener(EventListenerPort):
         """
         super().__init__()
         self._app = None
+        self._dbus_events_package = dbusEventsPackage
         self._signals = DbusSignals(dbusEventsPackage)
 
     @property
@@ -61,6 +62,16 @@ class DbusSignalListener(EventListenerPort):
         :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
         """
         return self._signals
+
+    @property
+    @attribute
+    def dbus_events_package(self) -> str:
+        """
+        Retrieves the package of the d-bus events.
+        :return: Such package.
+        :rtype: str
+        """
+        return self._dbus_events_package
 
     @classmethod
     def priority(cls) -> int:
@@ -157,7 +168,7 @@ class DbusSignalListener(EventListenerPort):
                         member="AddMatch",
                         signature="s",
                         body=[
-                            f"type='signal',interface='{fqdn_interface_class}',path='{path}',member='{instance.name}'"
+                            f"type='signal',interface='{fqdn_interface_class}',path_namespace='{path}',member='{instance.name}'"
                         ],
                     )
                 )
@@ -205,11 +216,10 @@ class DbusSignalListener(EventListenerPort):
         result = None
 
         tokens = self.parse_signal_name(signal)
-        package = ".".join(tokens[:-1])
+        module_name = f"{self.dbus_events_package}.dbus_{self.__class__.camel_to_snake(tokens[-1])}"
         # delegate the parsing logic to the dbus event class
         from importlib import import_module
 
-        module_name = f"{package}.infrastructure.dbus.dbus_{self.__class__.camel_to_snake(tokens[-1])}"
         try:
             module = import_module(module_name)
             dbus_event_class = getattr(module, f"Dbus{tokens[-1]}")
@@ -227,7 +237,6 @@ class DbusSignalListener(EventListenerPort):
         :param event: The event.
         :type event: pythoneda.Event
         """
-        DbusSignalListener.logger().debug(f"Received d-bus signal: {event}")
         await self.app.accept(event)
 
 

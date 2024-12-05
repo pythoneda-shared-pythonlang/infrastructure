@@ -109,11 +109,11 @@ class DbusSignalEmitter(EventEmitter):
                     DbusSignalEmitter.logger().error(mismatch)
 
             else:
-                DbusSignalEmitter.logger().error(
+                DbusSignalEmitter.logger().warning(
                     f"No d-bus emitter registered for event {event.__class__} ({event})"
                 )
         else:
-            DbusSignalEmitter.logger().error(f"No d-bus emitters found")
+            DbusSignalEmitter.logger().warning(f"No d-bus emitters found")
 
         return await super().emit(event)
 
