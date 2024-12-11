@@ -104,7 +104,7 @@ class DbusSignalEmitter(EventEmitter):
                     )
                 except SignatureBodyMismatchError as mismatch:
                     DbusSignalEmitter.logger().error(
-                        f"Bad implementation of class {event.__class__}"
+                        f"Bad implementation of class {event.__class__}: {mismatch}"
                     )
                     DbusSignalEmitter.logger().error(mismatch)
 
