@@ -190,7 +190,7 @@ class DbusSignalListener(EventListenerPort):
         :rtype: bool
         """
         if message.message_type == MessageType.SIGNAL:
-            DbusSignalListener.logger().info(f"Received signal {message.member}")
+            DbusSignalListener.logger().debug(f"Received signal {message.member}")
             result = True
             event = self.parse(message, message.member)
             if event:
