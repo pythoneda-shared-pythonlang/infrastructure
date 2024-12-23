@@ -31,7 +31,6 @@ from typing import Dict, Type
 
 
 class DbusSignals(BaseObject):
-
     """
     Provides listening and emitting support for dynamically-discovered d-bus events.
 
@@ -93,9 +92,7 @@ class DbusSignals(BaseObject):
                 for child in subclass.__subclasses__():
                     result.extend(self.find_subclasses_in_package(package_name, child))
         else:
-            DbusSignals.logger().error(
-                f"Could not find the package '{package_name}'. Ensure it is correctly installed."
-            )
+            DbusSignals.logger().error(f"Could not find the package '{package_name}'.")
             result = []
 
         return result

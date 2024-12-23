@@ -19,16 +19,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import abc
 from dbus_next import BusType, Message, MessageType
 from dbus_next.aio import MessageBus
 from dbus_next.errors import SignatureBodyMismatchError
 from .dbus_event import DbusEvent
 from .dbus_signals import DbusSignals
 from pythoneda.shared import attribute, Event, EventEmitter
-from typing import Dict, Type
+from typing import Dict, List, Tuple, Type
 
 
-class DbusSignalEmitter(EventEmitter):
+class DbusSignalEmitter(EventEmitter, abc.ABC):
     """
     A Port that emits events as d-bus signals.
 
@@ -43,33 +44,43 @@ class DbusSignalEmitter(EventEmitter):
     """
 
     _count = 0
+    _events = None
+    _events_by_class = {}
 
-    def __init__(self, dbusEventsPackage: str):
+    def __init__(self):
         """
         Creates a new DbusSignalEmitter instance.
-        :params dbusEventsPackage: The package with the d-bus events.
-        :type dbusEventsPackage: str
         """
         super().__init__()
-        self._signals = DbusSignals(dbusEventsPackage)
 
-    @property
-    @attribute
-    def signals(self) -> DbusSignals:
+    @classmethod
+    def enable(cls, *args: Tuple, **kwargs: Dict):
         """
-        Retrieves the d-bus signals.
-        :return: The DbusSignals instance.
-        :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
+        Enables this port.
+        :param args: Additional positional arguments.
+        :type args: Tuple
+        :param kwargs: Additional keyword arguments.
+        :type kwargs: Dict
         """
-        return self._signals
+        super().enable(*args, **kwargs)
+        cls._events = kwargs.get("events", None)
+        event_pkgs = cls.event_packages()
+        if cls._events is None and event_pkgs is not None:
+            cls._events = []
+            for pkg in event_pkgs:
+                for signal_name, value in DbusSignals(pkg).signals():
+                    cls._events.append({"event-class": value[0], "bus-type": value[1]})
+                    cls._events_by_class[cls.full_class_name(value[0])] = value[1]
 
-    def signal_emitters(self) -> Dict[str, Type[DbusEvent]]:
+    @classmethod
+    @abc.abstractmethod
+    def event_packages(cls) -> List[str]:
         """
-        Retrieves the configured event emitters.
-        :return: For each event, the d-bus implementation.
-        :rtype: Dict[str, Type[pythoneda.shared.infrastructure.dbus.DbusEvent]]
+        Retrieves the packages of the supported events.
+        :return: The packages.
+        :rtype: List[str]
         """
-        return self.signals.signals()
+        pass
 
     async def emit(self, event: Event):
         """
@@ -77,16 +88,17 @@ class DbusSignalEmitter(EventEmitter):
         :param event: The domain event to emit.
         :type event: pythoneda.event.Event
         """
-        collaborators = self.signal_emitters()
-
-        if collaborators:
+        if self._events:
             event_class_name = self.__class__.full_class_name(event.__class__)
-            if event_class_name in collaborators:
-                impl_details = collaborators[event_class_name]
-                instance_class = impl_details[0]
+            print(
+                f"Event class name: {event_class_name}, events_by_class: {self._events_by_class}"
+            )
+            event_details = self._events_by_class.get(event_class_name, None)
+            if event_details is not None:
+                instance_class = event_details.get("event-class", None)
                 instance = instance_class()
                 path = instance.build_path(event)
-                bus_type = impl_details[1]
+                bus_type = event_details.get("bus-type", BusType.SYSTEM)
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(path, instance)
                 try:

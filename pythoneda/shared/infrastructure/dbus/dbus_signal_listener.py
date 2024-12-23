@@ -19,16 +19,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+import abc
 import asyncio
 from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
 from .dbus_event import DbusEvent
 from .dbus_signals import DbusSignals
 from pythoneda.shared import attribute, EventListenerPort
-from typing import Dict, List, Type
+from typing import Dict, List, Tuple, Type
 
 
-class DbusSignalListener(EventListenerPort):
+class DbusSignalListener(EventListenerPort, abc.ABC):
     """
     A PrimaryPort that receives events as d-bus signals.
 
@@ -42,16 +43,19 @@ class DbusSignalListener(EventListenerPort):
         - pythoneda.shared.application.PythonEDA: Gets notified back with domain events.
     """
 
-    def __init__(self, dbusEventsPackage: str):
+    _events = []
+
+    def __init__(self, dbusEventsPackages: List[str] = None):
         """
         Creates a new DbusSignalListener instance.
-        :params dbusEventsPackage: The package with the d-bus events.
-        :type dbusEventsPackage: str
+        :param dbusEventsPackages: The packages with the d-bus events.
+        :type dbusEventsPackages: str
         """
         super().__init__()
         self._app = None
-        self._dbus_events_package = dbusEventsPackage
-        self._signals = DbusSignals(dbusEventsPackage)
+        self._signals = None
+        if dbusEventsPackages is not None:
+            self._signals = [DbusSignals(pkg) for pkg in dbusEventsPackages]
 
     @property
     @attribute
@@ -62,16 +66,6 @@ class DbusSignalListener(EventListenerPort):
         :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
         """
         return self._signals
-
-    @property
-    @attribute
-    def dbus_events_package(self) -> str:
-        """
-        Retrieves the package of the d-bus events.
-        :return: Such package.
-        :rtype: str
-        """
-        return self._dbus_events_package
 
     @classmethod
     def priority(cls) -> int:
@@ -99,15 +93,32 @@ class DbusSignalListener(EventListenerPort):
         """
         return self._app
 
-    def signal_receivers(self, app) -> Dict[str, Type[DbusEvent]]:
+    @classmethod
+    def enable(cls, *args: Tuple, **kwargs: Dict):
         """
-        Retrieves the configured signal receivers.
-        :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
-        :return: For each event, the d-bus implementation.
-        :rtype: Dict[str, Type[pythoneda.shared.infrastructure.dbus.DbusEvent]]
+        Enables this port.
+        :param args: Additional positional arguments.
+        :type args: Tuple
+        :param kwargs: Additional keyword arguments.
+        :type kwargs: Dict
         """
-        return self.signals.signals()
+        super().enable(*args, **kwargs)
+        cls._events = kwargs.get("events", None)
+        if cls._events is None:
+            cls._events = []
+            for pkg in cls.event_packages():
+                for signal_name, value in DbusSignals(pkg).signals():
+                    cls._events.append({"event-class": value[0], "bus-type": value[1]})
+
+    @classmethod
+    @abc.abstractmethod
+    def event_packages(cls) -> List[str]:
+        """
+        Retrieves the packages of the supported events.
+        :return: The packages.
+        :rtype: List[str]
+        """
+        pass
 
     def parse_signal_name(self, value) -> List:
         """
@@ -146,15 +157,13 @@ class DbusSignalListener(EventListenerPort):
         """
         await self.set_app(app)
 
-        receivers = self.signal_receivers(app).items()
-
-        if receivers:
-            for signal_name, value in receivers:
-                interface_class = value[0]
-                instance = interface_class()
-                bus_type = value[1]
+        if len(self.__class__._events) > 0:
+            for enabled_event in self.__class__._events:
+                event_class = enabled_event.get("event-class", None)
+                bus_type = enabled_event.get("bus-type", BusType.SYSTEM)
+                instance = event_class()
                 path = instance.path
-                fqdn_interface_class = self.__class__.full_class_name(interface_class)
+                fqdn_event_class = self.__class__.full_class_name(event_class)
                 bus = await MessageBus(bus_type=bus_type).connect()
 
                 bus.add_message_handler(self.process_message)
@@ -168,7 +177,7 @@ class DbusSignalListener(EventListenerPort):
                         member="AddMatch",
                         signature="s",
                         body=[
-                            f"type='signal',interface='{fqdn_interface_class}',path_namespace='{path}',member='{instance.name}'"
+                            f"type='signal',interface='{fqdn_event_class}',path_namespace='{path}',member='{instance.name}'"
                         ],
                     )
                 )
@@ -179,7 +188,9 @@ class DbusSignalListener(EventListenerPort):
             while True:
                 await asyncio.sleep(1)
         else:
-            DbusSignalListener.logger().warning(f"No receivers configured for {app}!")
+            DbusSignalListener.logger().warning(
+                f"No d-bus events configured for {app}!"
+            )
 
     def process_message(self, message: Message) -> bool:
         """
@@ -216,16 +227,20 @@ class DbusSignalListener(EventListenerPort):
         result = None
 
         tokens = self.parse_signal_name(signal)
-        module_name = f"{self.dbus_events_package}.dbus_{self.__class__.camel_to_snake(tokens[-1])}"
-        # delegate the parsing logic to the dbus event class
-        from importlib import import_module
 
         try:
-            module = import_module(module_name)
-            dbus_event_class = getattr(module, f"Dbus{tokens[-1]}")
+            DbusSignalListener.logger().debug(
+                f"Finding dbus event class for Dbus{tokens[-1]}"
+            )
+            module_name, dbus_event_class = self.find_class_in_imported_modules(
+                f"Dbus{tokens[-1]}"
+            )
+            DbusSignalListener.logger().debug(
+                f"Delegating parsing {message} to {dbus_event_class}"
+            )
             result = dbus_event_class.parse(message)
         except ImportError as err:
-            DbusSignalListener.logger().debug(f"Discarding unparseable event: {err}")
+            DbusSignalListener.logger().debug(f"Discarding unparseable message: {err}")
         except Exception as err:
             DbusSignalListener.logger().error(err)
 
@@ -238,6 +253,35 @@ class DbusSignalListener(EventListenerPort):
         :type event: pythoneda.Event
         """
         await self.app.accept(event)
+
+    def find_class_in_imported_modules(self, className: str) -> List[Tuple[str, type]]:
+        """
+        Search through all currently imported modules for a class with the given name.
+        Returns a list of tuples: (module_name, the_class_object)
+        :param className: The name of the class to search for.
+        :type className: str
+        :return: The list of tuples (module_name, the_class_object).
+        :rtype: List[Tuple[str, type]]
+        """
+        import sys
+        import types
+
+        result = None
+
+        for module_name, module_obj in sys.modules.items():
+            # Make sure we actually have a module object
+            if not isinstance(module_obj, types.ModuleType):
+                continue
+
+            # Attempt to get the attribute/class from the module
+            candidate = getattr(module_obj, className, None)
+
+            # Check if the attribute is actually a class
+            if isinstance(candidate, type):
+                result = (module_name, candidate)
+                break
+
+        return result
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
