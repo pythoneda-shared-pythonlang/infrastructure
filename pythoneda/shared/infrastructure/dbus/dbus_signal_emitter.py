@@ -71,6 +71,13 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 for signal_name, value in DbusSignals(pkg).signals():
                     cls._events.append({"event-class": value[0], "bus-type": value[1]})
                     cls._events_by_class[cls.full_class_name(value[0])] = value[1]
+        else:
+            for event_details in cls._events:
+                event_class = event_details.get("event-class", None)
+                cls._events_by_class[cls.full_class_name(event_class.event_class())] = {
+                    "event-class": event_class,
+                    "bus-type": event_details.get("bus-type", BusType.SYSTEM),
+                }
 
     @classmethod
     @abc.abstractmethod
