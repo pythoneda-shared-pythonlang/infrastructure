@@ -40,19 +40,16 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         - None
     """
 
-    def __init__(self, path: str, bus_type: BusType):
+    def __init__(self, name: str, path: str):
         """
         Creates a new DbusEvent.
+        :param name: The signal name.
+        :type name: str
         :param path: The d-bus path.
         :type path: str
-        :param busType: The bus type.
-        :type busType: dbus_next.BusType
         """
-        super().__init__(
-            f"{self.__class__.full_class_name(self.__class__).replace('.', '_')}"
-        )
+        super().__init__(name)
         self._path = path
-        self._bus_type = bus_type
 
     @property
     def path(self) -> str:
@@ -62,15 +59,6 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         :rtype: str
         """
         return self._path
-
-    @property
-    def bus_type(self) -> BusType:
-        """
-        Retrieves the bus type.
-        :return: Such information.
-        :rtype: dbus_next.BusType
-        """
-        return self._bus_type
 
     def build_path(self, event: Event) -> str:
         """

@@ -229,14 +229,8 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         tokens = self.parse_signal_name(signal)
 
         try:
-            DbusSignalListener.logger().debug(
-                f"Finding dbus event class for Dbus{tokens[-1]}"
-            )
             module_name, dbus_event_class = self.find_class_in_imported_modules(
                 f"Dbus{tokens[-1]}"
-            )
-            DbusSignalListener.logger().debug(
-                f"Delegating parsing {message} to {dbus_event_class}"
             )
             result = dbus_event_class.parse(message)
         except ImportError as err:
