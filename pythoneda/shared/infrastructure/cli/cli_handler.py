@@ -20,12 +20,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
-import argparse
 from .abstract_cli_handler import AbstractCliHandler
+import argparse
+from pythoneda.shared import PythonedaApplication
+from typing import Dict
 
 
 class CliHandler(AbstractCliHandler, abc.ABC):
-
     """
     Base class for CLI handlers.
 
@@ -46,21 +47,21 @@ class CliHandler(AbstractCliHandler, abc.ABC):
         """
         super().__init__(description)
 
-    async def entrypoint(self, app):
+    async def entrypoint(self, app: PythonedaApplication):
         """
         Receives the notification that the system has been accessed from the CLI.
         :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
+        :type app: pythoneda.shared.PythonedaApplication
         """
         args, unknown_args = self.parser.parse_known_args()
         await self.handle(app, args)
 
     @abc.abstractmethod
-    async def handle(self, app, args: argparse.Namespace):
+    async def handle(self, app: PythonedaApplication, args: argparse.Namespace):
         """
         Processes the command specified from the command line.
         :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
+        :type app: pythoneda.shared.PythonedaApplication
         :param args: The CLI args.
         :type args: argparse.Namespace
         """

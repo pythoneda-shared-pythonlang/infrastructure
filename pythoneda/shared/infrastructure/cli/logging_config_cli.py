@@ -21,11 +21,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from .abstract_cli_handler import AbstractCliHandler
 from argparse import ArgumentParser, Namespace
-from pythoneda.shared import PrimaryPort
+from pythoneda.shared import PrimaryPort, PythonedaApplication
+from typing import Dict
 
 
 class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
-
     """
     A PrimaryPort that configures logging the command line.
 
@@ -71,39 +71,42 @@ class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
         :type parser: argparse.ArgumentParser
         """
         parser.add_argument(
-            "-v", "--info", action="store_true", help="Enable info mode"
+            "-v", "--debug", action="store_true", help="Enable debug mode"
         )
         parser.add_argument(
-            "-vv", "--debug", action="store_true", help="Enable debug mode"
+            "-vv", "--trace", action="store_true", help="Enable trace mode"
         )
         parser.add_argument(
             "-q", "--quiet", action="store_true", help="Enable quiet mode"
         )
 
-    def entrypoint(self, app):
+    def entrypoint(self, app: PythonedaApplication):
         """
         Receives the notification that the system has been accessed from the CLI.
         :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
+        :type app: pythoneda.shared.PythonedaApplication
         """
         args, unknown_args = self.parser.parse_known_args()
         self.handle(app, args)
 
-    def handle(self, app, args: Namespace):
+    def handle(self, app: PythonedaApplication, args: Namespace):
         """
         Processes the command specified from the command line.
         :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
+        :type app: pythoneda.shared.PythonedaApplication
         :param args: The CLI args.
         :type args: argparse.args
         """
         info = True
         debug = args.debug
+        trace = args.trace
         if args.quiet:
             info = False
             debug = False
+            trace = False
         app.accept_configure_logging(
             {
+                "trace": trace,
                 "debug": debug,
                 "info": info,
                 "quiet": args.quiet,

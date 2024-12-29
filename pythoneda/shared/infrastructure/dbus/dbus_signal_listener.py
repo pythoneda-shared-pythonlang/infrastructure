@@ -25,7 +25,15 @@ from dbus_next.aio import MessageBus
 from dbus_next import BusType, Message, MessageType
 from .dbus_event import DbusEvent
 from .dbus_signals import DbusSignals
-from pythoneda.shared import attribute, EventListenerPort
+from pythoneda.shared import (
+    attribute,
+    Event,
+    EventListenerPort,
+    full_class_name,
+    Invariant,
+    Invariants,
+    PythonedaApplication,
+)
 from typing import Dict, List, Tuple, Type
 
 
@@ -45,7 +53,10 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
     _events = []
 
-    def __init__(self, dbusEventsPackages: List[str] = None):
+    def __init__(
+        self,
+        dbusEventsPackages: List[str] = None,
+    ):
         """
         Creates a new DbusSignalListener instance.
         :param dbusEventsPackages: The packages with the d-bus events.
@@ -53,19 +64,6 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         """
         super().__init__()
         self._app = None
-        self._signals = None
-        if dbusEventsPackages is not None:
-            self._signals = [DbusSignals(pkg) for pkg in dbusEventsPackages]
-
-    @property
-    @attribute
-    def signals(self) -> DbusSignals:
-        """
-        Retrieves the d-bus signals.
-        :return: The DbusSignals instance.
-        :rtype: pythoneda.shared.infrastructure.dbus.DbusSignals
-        """
-        return self._signals
 
     @classmethod
     def priority(cls) -> int:
@@ -75,23 +73,6 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :rtype: int
         """
         return 100
-
-    async def set_app(self, app):
-        """
-        Specifies the PythonEDA instance.
-        :param app: The PythonEDA instance.
-        :type app: pythoneda.application.PythonEDA
-        """
-        self._app = app
-
-    @property
-    def app(self):
-        """
-        Retrieves the PythonEDA instance.
-        :return: The PythonEDA instance.
-        :rtype: pythoneda.application.pythonEDA
-        """
-        return self._app
 
     @classmethod
     def enable(cls, *args: Tuple, **kwargs: Dict):
@@ -149,24 +130,26 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
         return result
 
-    async def entrypoint(self, app):
+    async def entrypoint(self, app: PythonedaApplication):
         """
         Receives the notification to connect to d-bus.
-        :param app: The PythonEDAApplication instance.
-        :type app: pythoneda.application.PythonEDA
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.shared.PythonedaApplication
         """
-        await self.set_app(app)
-
         if len(self.__class__._events) > 0:
             for enabled_event in self.__class__._events:
                 event_class = enabled_event.get("event-class", None)
                 bus_type = enabled_event.get("bus-type", BusType.SYSTEM)
                 instance = event_class()
                 path = instance.path
-                fqdn_event_class = self.__class__.full_class_name(event_class)
+                fqdn_event_class = full_class_name(event_class)
                 bus = await MessageBus(bus_type=bus_type).connect()
 
-                bus.add_message_handler(self.process_message)
+                bus.add_message_handler(
+                    event_class.create_process_message_function(
+                        bus_type, path, self, app
+                    )
+                )
 
                 # Subscribe to the signal
                 await bus.call(
@@ -182,28 +165,46 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
                     )
                 )
                 DbusSignalListener.logger().debug(
-                    f"Subscribed to signal {instance.name} via {path}"
+                    f"Waiting for {instance.name} in {bus_type}:{path}"
                 )
 
             while True:
                 await asyncio.sleep(1)
         else:
-            DbusSignalListener.logger().warning(
-                f"No d-bus events configured for {app}!"
-            )
+            DbusSignalListener.logger().warning(f"No d-bus events configured!")
 
-    def process_message(self, message: Message) -> bool:
+    def process_message(
+        self,
+        message: Message,
+        eventClass: Type[Event],
+        busType: BusType,
+        path: str,
+        app: PythonedaApplication,
+    ) -> bool:
         """
         Process an incoming message.
         :param message: The message.
         :type message: dbus_next.Message
+        :param eventClass: The event class.
+        :type eventClass: Type[pythoneda.shared.Event]
+        :param busType: The bus type.
+        :type busType: dbus_next.BusType
+        :param path: The d-bus path.
+        :type path: str
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.shared.PythonedaApplication
         :return: True, to avoid replying.
         :rtype: bool
         """
-        if message.message_type == MessageType.SIGNAL:
-            DbusSignalListener.logger().debug(f"Received signal {message.member}")
+        if (
+            message.message_type == MessageType.SIGNAL
+            and eventClass.name == message.member
+        ):
+            DbusSignalListener.logger().debug(
+                f"{busType}:{path} -> {eventClass} / {message.member}"
+            )
             result = True
-            event = self.parse(message, message.member)
+            event = self.parse(message, message.member, app)
             if event:
                 asyncio.create_task(self.listen(event))
             else:
@@ -216,27 +217,40 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
 
         return result
 
-    def parse(self, message: Message, signal: str):
+    def parse(self, message: Message, signal: str, app: PythonedaApplication) -> Event:
         """
         Parses given signal.
         :param message: The message.
         :type message: dbus_next.Message
         :param signal: The name of the signal.
         :type signal: str
+        :param app: The PythonEDA instance.
+        :type app: pythoneda.shared.PythonedaApplication
+        :return: The incoming event.
+        :rtype: pythoneda.shared.Event
         """
         result = None
 
         tokens = self.parse_signal_name(signal)
 
+        invariants_json = None
         try:
             module_name, dbus_event_class = self.find_class_in_imported_modules(
                 f"Dbus{tokens[-1]}"
             )
-            result = dbus_event_class.parse(message)
+            invariants_json, result = dbus_event_class.parse(message, app)
         except ImportError as err:
             DbusSignalListener.logger().debug(f"Discarding unparseable message: {err}")
         except Exception as err:
             DbusSignalListener.logger().error(err)
+
+        invariants = Invariants.instance()
+        invariants.bind_all_from_json(invariants_json)
+        invariant = Invariant[PythonedaApplication](
+            app, "pythoneda.shared.PythonedaApplication"
+        )
+        invariants.bind(invariant, None)
+        invariants.bind(invariant, result)
 
         return result
 
@@ -246,7 +260,15 @@ class DbusSignalListener(EventListenerPort, abc.ABC):
         :param event: The event.
         :type event: pythoneda.Event
         """
-        await self.app.accept(event)
+        app_invariant = Invariants.instance().apply(
+            "pythoneda.shared.PythonedaApplication", self
+        )
+        if app_invariant is None:
+            DbusSignalListener.logger().error(
+                f"Event {event} received but there is no such invariant as pythoneda.shared.PythonedaApplication"
+            )
+        else:
+            await app_invariant.value.accept(event)
 
     def find_class_in_imported_modules(self, className: str) -> List[Tuple[str, type]]:
         """

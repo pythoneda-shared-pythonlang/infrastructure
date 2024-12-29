@@ -25,7 +25,7 @@ from dbus_next.aio import MessageBus
 from dbus_next.errors import SignatureBodyMismatchError
 from .dbus_event import DbusEvent
 from .dbus_signals import DbusSignals
-from pythoneda.shared import attribute, Event, EventEmitter
+from pythoneda.shared import attribute, Event, EventEmitter, full_class_name
 from typing import Dict, List, Tuple, Type
 
 
@@ -70,11 +70,11 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
             for pkg in event_pkgs:
                 for signal_name, value in DbusSignals(pkg).signals():
                     cls._events.append({"event-class": value[0], "bus-type": value[1]})
-                    cls._events_by_class[cls.full_class_name(value[0])] = value[1]
+                    cls._events_by_class[full_class_name(value[0])] = value[1]
         else:
             for event_details in cls._events:
                 event_class = event_details.get("event-class", None)
-                cls._events_by_class[cls.full_class_name(event_class.event_class())] = {
+                cls._events_by_class[full_class_name(event_class.event_class())] = {
                     "event-class": event_class,
                     "bus-type": event_details.get("bus-type", BusType.SYSTEM),
                 }
@@ -96,10 +96,7 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
         :type event: pythoneda.event.Event
         """
         if self._events:
-            event_class_name = self.__class__.full_class_name(event.__class__)
-            print(
-                f"Event class name: {event_class_name}, events_by_class: {self._events_by_class}"
-            )
+            event_class_name = full_class_name(event.__class__)
             event_details = self._events_by_class.get(event_class_name, None)
             if event_details is not None:
                 instance_class = event_details.get("event-class", None)
@@ -109,17 +106,15 @@ class DbusSignalEmitter(EventEmitter, abc.ABC):
                 bus = await MessageBus(bus_type=bus_type).connect()
                 bus.export(path, instance)
                 try:
+                    DbusSignalEmitter.logger().debug(f"{event} -> {bus_type}:{path}")
                     await bus.send(
                         Message.new_signal(
                             path,
-                            self.__class__.full_class_name(instance_class),
+                            full_class_name(instance_class),
                             instance.name,
                             instance.sign(event),
                             instance.transform(event),
                         )
-                    )
-                    DbusSignalEmitter.logger().info(
-                        f"Sent signal {instance_class.__module__}.{instance_class.__name__} on path {path} to d-bus {bus_type}"
                     )
                 except SignatureBodyMismatchError as mismatch:
                     DbusSignalEmitter.logger().error(

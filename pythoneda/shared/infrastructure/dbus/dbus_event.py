@@ -23,8 +23,8 @@ import abc
 from dbus_next import BusType, Message
 from dbus_next.service import ServiceInterface
 import json
-from pythoneda.shared import BaseObject, Event
-from typing import List, Type
+from pythoneda.shared import BaseObject, Event, PythonedaApplication
+from typing import Callable, List, Tuple, Type
 
 
 class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
@@ -40,15 +40,13 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         - None
     """
 
-    def __init__(self, name: str, path: str):
+    def __init__(self, path: str):
         """
         Creates a new DbusEvent.
-        :param name: The signal name.
-        :type name: str
         :param path: The d-bus path.
         :type path: str
         """
-        super().__init__(name)
+        super().__init__(self.__class__.name)
         self._path = path
 
     @property
@@ -69,6 +67,42 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         :rtype: str
         """
         return self.path
+
+    @classmethod
+    @property
+    @abc.abstractmethod
+    def name(cls) -> str:
+        """
+        Retrieves the d-bus interface name.
+        :return: Such value.
+        :rtype: str
+        """
+        pass
+
+    @classmethod
+    def create_process_message_function(
+        cls,
+        busType: BusType,
+        path: str,
+        listener: "pythoneda.shared.infrastructure.dbus.DbusListener",
+        app: PythonedaApplication,
+    ) -> Callable[[Message, Type, BusType, str, PythonedaApplication], None]:
+        """
+        Creates a function to process a d-bus message.
+        :param busType: The bus type.
+        :type busType: dbus_next.BusType
+        :param path: The path.
+        :type path: str
+        :param listener: The listener.
+        :type listener: pythoneda.shared.infrastructure.dbus.DbusListener
+        :param app: The application.
+        :type app: pythoneda.shared.PythonedaApplication
+        :return: The function.
+        :rtype: Callable[[Message, Type, BusType, str, PythonedaApplication], None]
+        """
+        return lambda message: listener.process_message(
+            message, cls, busType, path, app
+        )
 
     @classmethod
     @abc.abstractmethod
@@ -106,13 +140,15 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def parse(cls, message: Message) -> Event:
+    def parse(cls, message: Message, app: PythonedaApplication) -> Tuple[str, Event]:
         """
         Parses given d-bus message containing an event.
         :param message: The message.
         :type message: dbus_next.Message
-        :return: The specific event.
-        :rtype: pythoneda.shared.Event
+        :param app: The application.
+        :type app: pythoneda.shared.PythonedaApplication
+        :return: A tuple with the invariants and the specific event.
+        :rtype: Tuple[str, pythoneda.shared.Event]
         """
         pass
 

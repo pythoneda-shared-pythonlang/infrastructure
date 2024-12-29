@@ -46,7 +46,17 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         :type description: str
         """
         super().__init__()
+        self._description = description
         self.add_arguments(self._parser)
+
+    @property
+    def description(self) -> str:
+        """
+        Retrieves the handler description.
+        :return: Such text.
+        :rtype: str
+        """
+        return self._description
 
     @classmethod
     def instantiate(cls):
