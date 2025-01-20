@@ -66,7 +66,18 @@ class DbusEvent(BaseObject, ServiceInterface, abc.ABC):
         :return: Such value.
         :rtype: str
         """
+        DbusEvent.logger().debug(f"Path for event {event}: {self.path}")
         return self.path
+
+    def sanitize_path(self, path: str) -> str:
+        """
+        Sanitizes given path.
+        :param path: The path.
+        :type path: str
+        :return: The sanitized path.
+        :rtype: str
+        """
+        return path.replace("-", "_").replace(".", "")
 
     @classmethod
     @property
