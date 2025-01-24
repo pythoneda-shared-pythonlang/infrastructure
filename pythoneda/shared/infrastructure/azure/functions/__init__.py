@@ -55,7 +55,8 @@ def get_pythoneda_app() -> PythonedaApplication:
 if os.environ.get("PYTHONEDA_ENABLE_AZURE_FUNCTIONS", None) is not None:
     app_class = get_class_from_env()
     pythoneda_app = app_class.instance()
-    asyncio.run(app_class.main())
+    loop = asyncio.get_event_loop()
+    loop.create_task(app_class.main())
 
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
