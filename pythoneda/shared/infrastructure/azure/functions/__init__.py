@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import asyncio
 import os, importlib
-from pythoneda.shared import Invariants, PythonedaApplication
+from pythoneda.shared import Invariant, Invariants, PythonedaApplication
 from typing import Type
 
 __path__ = __import__("pkgutil").extend_path(__path__, __name__)
@@ -49,9 +49,13 @@ def get_pythoneda_app() -> PythonedaApplication:
     :return: The PythonEDA application.
     :rtype: pythoneda.shared.PythonedaApplication
     """
-    result = Invariants.instance().apply("pythoneda.shared.PythonedaApplication")
+    global pythoneda_app_default
+    result = Invariants.instance().apply("pythoneda.shared.PythonedaApplication", None)
     if result is None:
         result = pythoneda_app_default
+    elif pythoneda_app_default is None:
+        pythoneda_app_default = result
+
     return result
 
 
@@ -59,8 +63,13 @@ async def run_main():
     """
     Runs the main method of the PythonEDA application.
     """
-    app_class = get_class_from_env()
-    return await app_class.main()
+    if get_pythoneda_app() is None:
+        app_class = get_class_from_env()
+        result = await app_class.main()
+    else:
+        result = None
+
+    return result
 
 
 def on_main_done(fut: asyncio.Future):
@@ -69,13 +78,14 @@ def on_main_done(fut: asyncio.Future):
     :param fut: The future.
     :type fut: asyncio.Future
     """
+    global pythoneda_app_default
     app = fut.result()
     if pythoneda_app_default is None:
         pythoneda_app_default = app
 
 
 if os.environ.get("PYTHONEDA_ENABLE_AZURE_FUNCTIONS", None) is not None:
-    if pythoneda_app_default is None:
+    if get_pythoneda_app() is None:
         loop = asyncio.get_event_loop()
         loop.create_task(run_main())
 
