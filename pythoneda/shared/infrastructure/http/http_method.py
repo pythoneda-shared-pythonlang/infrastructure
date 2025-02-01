@@ -1,8 +1,8 @@
 # vim: set fileencoding=utf-8
 """
-pythoneda/shared/infrastructure/http/__init__.py
+pythoneda/shared/infrastructure/http/http_method.py
 
-This file ensures pythoneda.shared.infrastructure.http is a namespace.
+This file declares the HttpMethod class.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
@@ -19,10 +19,32 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-__path__ = __import__("pkgutil").extend_path(__path__, __name__)
+from enum import Enum
 
-from .http_method import HttpMethod
-from .http_event import HttpEvent
+
+class HttpMethod(str, Enum):
+    """
+    An enumerated type to identify HTTP methods.
+
+    Class name: HttpMethod
+
+    Responsibilities:
+        - Define the different HTTP methods.
+
+    Collaborators:
+        - None.
+    """
+
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    PATCH = "PATCH"
+    DELETE = "DELETE"
+    HEAD = "HEAD"
+    OPTIONS = "OPTIONS"
+    TRACE = "TRACE"
+    CONNECT = "CONNECT"
+
 
 # vim: syntax=python ts=4 sw=4 sts=4 tw=79 sr et
 # Local Variables:

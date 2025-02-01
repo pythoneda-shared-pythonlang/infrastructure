@@ -54,7 +54,9 @@ def get_pythoneda_app() -> PythonedaApplication:
     if result is None:
         result = pythoneda_app_default
     elif pythoneda_app_default is None:
-        pythoneda_app_default = result
+        pythoneda_app_default = result.value
+    else:
+        result = pythoneda_app_default
 
     return result
 
