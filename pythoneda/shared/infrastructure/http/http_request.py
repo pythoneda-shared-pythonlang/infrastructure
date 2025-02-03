@@ -1,8 +1,8 @@
 # vim: set fileencoding=utf-8
 """
-pythoneda/shared/infrastructure/http/http_event.py
+pythoneda/shared/infrastructure/http/http_request.py
 
-This file defines the HttpEvent class.
+This file defines the HttpRequest class.
 
 Copyright (C) 2023-today rydnr's pythoneda-shared-pythonlang/infrastructure
 
@@ -26,14 +26,14 @@ from pythoneda.shared import attribute, BaseObject, Event
 from typing import Dict, Optional, Tuple, Type
 
 
-class HttpEvent(BaseObject, abc.ABC):
+class HttpRequest(Event, abc.ABC):
     """
-    HTTP interface for events.
+    HTTP requests.
 
-    Class name: HttpEvents
+    Class name: HttpRequests
 
     Responsibilities:
-        - Define the HTTP interface for events.
+        - Define a HTTP request.
 
     Collaborators:
         - None
@@ -48,7 +48,7 @@ class HttpEvent(BaseObject, abc.ABC):
         body: Dict,
     ):
         """
-        Creates a new HttpEvent.
+        Creates a new HttpRequest.
         :param httpMethod: The HTTP method.
         :type httpMethod: str
         :param queryStringParameters: The query string parameters.
@@ -60,7 +60,6 @@ class HttpEvent(BaseObject, abc.ABC):
         :param body: The body.
         :type body: Dict
         """
-        super().__init__()
         self._http_method = httpMethod
         self._query_string_parameters = queryStringParameters
         self._headers = headers
@@ -71,6 +70,7 @@ class HttpEvent(BaseObject, abc.ABC):
             raise ValueError(f"Invalid input")
         else:
             self._processed_params = params
+        super().__init__()
 
     @property
     @attribute
@@ -194,21 +194,20 @@ class HttpEvent(BaseObject, abc.ABC):
         """
         result = None
 
-        body = self._processed_params.get("body", None)
-        if body is not None:
-            result = body.get(paramName, None)
-
-        if result is None:
-            path_params = self._processed_params.get("path_parameters", None)
-            if path_params is not None:
-                result = path_params.get(paramName, None)
-
+        path_params = self._processed_params.get("path_parameters", None)
+        if path_params is not None:
+            result = path_params.get(paramName, None)
         if result is None:
             query_string_params = self._processed_params.get(
                 "query_string_parameters", None
             )
             if query_string_params is not None:
                 result = query_string_params.get(paramName, None)
+
+        if result is None:
+            body = self._processed_params.get("body", None)
+            if body is not None:
+                result = body.get(paramName, None)
 
         return result
 
