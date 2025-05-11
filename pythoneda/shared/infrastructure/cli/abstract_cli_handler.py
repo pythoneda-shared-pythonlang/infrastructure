@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import abc
 import argparse
 from pythoneda.shared import BaseObject, PrimaryPort
+from typing import Union
 
 
 class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
@@ -38,16 +39,20 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
     """
 
     _parser = argparse.ArgumentParser(conflict_handler="resolve", add_help=True)
+    _subparsers = _parser.add_subparsers(title="Events", dest="event", required=True)
 
-    def __init__(self, description: str):
+    def __init__(self, description: str, scope: Union[str, None] = None):
         """
         Creates a new AbstractCliHandler.
         :param description: The description.
         :type description: str
+        :param scope: The scope of the handler.
+        :type scope: Union[str, None]
         """
-        super().__init__()
         self._description = description
-        self.add_arguments(self._parser)
+        self._scope = scope
+        self._actual_parser = None
+        super().__init__()
 
     @property
     def description(self) -> str:
@@ -75,6 +80,24 @@ class AbstractCliHandler(PrimaryPort, BaseObject, abc.ABC):
         :rtype: argparse.ArgumentParser
         """
         return self._parser
+
+    @property
+    def actual_parser(self) -> argparse.ArgumentParser:
+        """
+        Retrieves the actual parser.
+        :return: Such instance.
+        :rtype: argparse.ArgumentParser
+        """
+        return self._actual_parser
+
+    @property
+    def scope(self) -> Union[str, None]:
+        """
+        Retrieves the scope of this port.
+        :return: The scope.
+        :rtype: Union[str, None]
+        """
+        return self._scope
 
     @abc.abstractmethod
     def add_arguments(self, parser: argparse.ArgumentParser):

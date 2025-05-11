@@ -20,10 +20,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 import abc
-from org.acmsl.licdata.events.clients import (
-    ListClientsRequested,
-    NoMatchingClientsFound,
-)
 from pythoneda.shared import Event
 from typing import Dict, Type
 
@@ -63,11 +59,11 @@ class HttpResponse(Event, abc.ABC):
         return self._response_event
 
     @property
-    def source_event(self) -> ListClientsRequested:
+    def source_event(self) -> Event:
         """
         Retrieves the source event.
         :return: The source event.
-        :type: org.acmsl.licdata.events.clients.ListClientsRequested
+        :type: pythoneda.shared.Event
         """
         return self._source_event
 

@@ -23,7 +23,7 @@ import abc
 from .abstract_cli_handler import AbstractCliHandler
 import argparse
 from pythoneda.shared import PythonedaApplication
-from typing import Dict
+from typing import Dict, Union
 
 
 class CliHandler(AbstractCliHandler, abc.ABC):
@@ -39,13 +39,30 @@ class CliHandler(AbstractCliHandler, abc.ABC):
         - pythoneda.application.PythonEDA: They are notified back with the information retrieved from the command line.
     """
 
-    def __init__(self, description: str):
+    _cli_already_handled = False
+
+    def __init__(self, description: str, scope: Union[str, None] = None):
         """
         Creates a new CliHandler.
         :param description: The description.
         :type description: str
+        :param scope: The scope of the handler.
+        :type scope: Union[str, None]
         """
-        super().__init__(description)
+        super().__init__(description, scope)
+
+    async def configure(self):
+        """
+        Configures the port.
+        """
+        if self.scope is None:
+            self._actual_parser = self.parser
+        else:
+            self._actual_parser = self._subparsers.add_parser(
+                self.scope, help=self.description
+            )
+        self.add_arguments(self.actual_parser)
+        self.actual_parser.set_defaults(func=self.handle)
 
     async def entrypoint(self, app: PythonedaApplication):
         """
@@ -53,8 +70,10 @@ class CliHandler(AbstractCliHandler, abc.ABC):
         :param app: The PythonEDA instance.
         :type app: pythoneda.shared.PythonedaApplication
         """
-        args, unknown_args = self.parser.parse_known_args()
-        await self.handle(app, args)
+        if not self._cli_already_handled:
+            self._cli_already_handled = True
+            args, unknown_args = self.parser.parse_known_args()
+            await args.func(app, args)
 
     @abc.abstractmethod
     async def handle(self, app: PythonedaApplication, args: argparse.Namespace):

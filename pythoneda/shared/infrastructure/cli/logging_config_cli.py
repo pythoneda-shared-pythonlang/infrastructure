@@ -19,13 +19,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from .abstract_cli_handler import AbstractCliHandler
+from .cli_handler import CliHandler
 from argparse import ArgumentParser, Namespace
 from pythoneda.shared import PrimaryPort, PythonedaApplication
 from typing import Dict
 
 
-class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
+class LoggingConfigCli(CliHandler, PrimaryPort):
     """
     A PrimaryPort that configures logging the command line.
 
@@ -43,7 +43,7 @@ class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
         """
         Creates a new LoggingConfigCli instance.
         """
-        super().__init__("Configures logging")
+        super().__init__("Logging")
 
     @classmethod
     def priority(cls) -> int:
@@ -80,16 +80,7 @@ class LoggingConfigCli(AbstractCliHandler, PrimaryPort):
             "-q", "--quiet", action="store_true", help="Enable quiet mode"
         )
 
-    def entrypoint(self, app: PythonedaApplication):
-        """
-        Receives the notification that the system has been accessed from the CLI.
-        :param app: The PythonEDA instance.
-        :type app: pythoneda.shared.PythonedaApplication
-        """
-        args, unknown_args = self.parser.parse_known_args()
-        self.handle(app, args)
-
-    def handle(self, app: PythonedaApplication, args: Namespace):
+    async def handle(self, app: PythonedaApplication, args):
         """
         Processes the command specified from the command line.
         :param app: The PythonEDA instance.
