@@ -70,8 +70,8 @@ class CliHandler(AbstractCliHandler, abc.ABC):
         :param app: The PythonEDA instance.
         :type app: pythoneda.shared.PythonedaApplication
         """
-        if not self._cli_already_handled:
-            self._cli_already_handled = True
+        if not CliHandler._cli_already_handled:
+            CliHandler._cli_already_handled = True
             args, unknown_args = self.parser.parse_known_args()
             await args.func(app, args)
 
